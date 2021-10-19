@@ -470,6 +470,9 @@ int main(int argc, char **argv)
 {
     ros::init(argc, argv, "scanRegistration");
     ros::NodeHandle nh;
+    std::string topic_cloud_in;
+    nh.param<std::string>("topic_cloud_in",topic_cloud_in,"/velodyne_points");
+
     //将名为 scan_line 的变量赋值给N_SCANS，没有参数则设动为16
     nh.param<int>("scan_line", N_SCANS, 16);
 
@@ -483,7 +486,8 @@ int main(int argc, char **argv)
         return 0;
     }
 
-    ros::Subscriber subLaserCloud = nh.subscribe<sensor_msgs::PointCloud2>("/velodyne_points", 100, laserCloudHandler);
+
+    ros::Subscriber subLaserCloud = nh.subscribe<sensor_msgs::PointCloud2>(topic_cloud_in, 100, laserCloudHandler);
 
     pubLaserCloud = nh.advertise<sensor_msgs::PointCloud2>("/velodyne_cloud_2", 100);
 
