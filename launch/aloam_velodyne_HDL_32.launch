@@ -10,7 +10,7 @@
 
     <param name="topic_cloud_in" type="string" value="/points_raw"/>
     <param name="mapping_line_resolution" type="double" value="0.2"/>
-    <param name="mapping_plane_resolution" type="double" value="0.4"/>
+    <param name="mapping_plane_resolution" type="double" value="0.5"/>
 
     <node pkg="aloam_velodyne" type="ascanRegistration" name="ascanRegistration" output="screen" />
 

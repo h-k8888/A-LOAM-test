@@ -37,7 +37,7 @@ catkin_package(
 )
 
 
-add_executable(ascanRegistration src/scanRegistration.cpp)
+add_executable(ascanRegistration src/scanRegistration.cpp src/fast-lio2/preprocess.cpp)
 target_link_libraries(ascanRegistration ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 
 add_executable(alaserOdometry src/laserOdometry.cpp)
