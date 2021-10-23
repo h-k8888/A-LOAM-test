@@ -1,0 +1,2 @@
+evo_traj tum laser_odom_feature_fast-lio2.txt --ref=laser_odom.txt -p --plot_mode=xy
+
