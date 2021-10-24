@@ -8,7 +8,7 @@
     <!-- remove too closed points -->
     <param name="minimum_range" type="double" value="0.3"/>
 
-
+    <param name="output_odom_file" type="string" value="/tmp/laser_odom.txt"/>
     <param name="mapping_line_resolution" type="double" value="0.2"/>
     <param name="mapping_plane_resolution" type="double" value="0.4"/>
 

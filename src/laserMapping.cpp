@@ -242,6 +242,33 @@ void laserOdometryHandler(const nav_msgs::Odometry::ConstPtr &laserOdometry)
 	pubOdomAftMappedHighFrec.publish(odomAftMapped);
 }
 
+std::string odom_file;
+std::ofstream laser_odom_ofs_;
+float traj_count = 0.0;
+bool saveTrajectory(const nav_msgs::Odometry odom)
+{
+    laser_odom_ofs_.open(odom_file, std::ios::app);
+    if (!laser_odom_ofs_) {
+        LOG(WARNING) << "无法生成文件: " << std::endl << odom_file << std::endl;
+        return false;
+    }
+    traj_count += 0.1;
+    laser_odom_ofs_
+//    << std::setprecision(8)
+//    todo
+//                    << odom.header.stamp.sec << " "
+            << traj_count << " "
+            << odom.pose.pose.position.x << " "
+            << odom.pose.pose.position.y << " "
+            << odom.pose.pose.position.z << " "
+            << odom.pose.pose.orientation.x << " "
+            << odom.pose.pose.orientation.y << " "
+            << odom.pose.pose.orientation.z << " "
+            << odom.pose.pose.orientation.w <<std::endl;
+    laser_odom_ofs_.close();
+    return true;
+}
+
 void process()
 {
 	while(1)
@@ -920,7 +947,9 @@ void process()
 			odomAftMapped.pose.pose.position.z = t_w_curr.z();
 			pubOdomAftMapped.publish(odomAftMapped);
 
-			geometry_msgs::PoseStamped laserAfterMappedPose;
+            saveTrajectory(odomAftMapped);
+
+            geometry_msgs::PoseStamped laserAfterMappedPose;
 			laserAfterMappedPose.header = odomAftMapped.header;
 			laserAfterMappedPose.pose = odomAftMapped.pose.pose;
 			laserAfterMappedPath.header.stamp = odomAftMapped.header.stamp;
@@ -957,7 +986,9 @@ int main(int argc, char **argv)
 	float planeRes = 0;
 	nh.param<float>("mapping_line_resolution", lineRes, 0.4);
 	nh.param<float>("mapping_plane_resolution", planeRes, 0.8);
-	printf("line resolution %f plane resolution %f \n", lineRes, planeRes);
+    nh.param<std::string>("output_odom_file",odom_file,"/tmp/laser_odom.txt");
+
+    printf("line resolution %f plane resolution %f \n", lineRes, planeRes);
 	downSizeFilterCorner.setLeafSize(lineRes, lineRes,lineRes);
 	downSizeFilterSurf.setLeafSize(planeRes, planeRes, planeRes);
 
