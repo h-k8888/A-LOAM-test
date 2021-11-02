@@ -68,6 +68,11 @@ int cloudSortInd[400000];
 int cloudNeighborPicked[400000];
 int cloudLabel[400000];
 
+std::vector<size_t> surfaec_flat_size;
+std::vector<size_t> surfaec_lessFlat_size;
+std::vector<size_t> surfaec_lessFlat_downsample_size;
+
+
 bool comp (int i,int j) { return (cloudCurvature[i]<cloudCurvature[j]); }
 
 ros::Publisher pubLaserCloud;
@@ -414,6 +419,10 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr &laserCloudMsg)
 
         surfPointsLessFlat += surfPointsLessFlatScanDS;
     }
+    //记录特征点数
+    surfaec_flat_size.push_back(surfPointsFlat.size());
+    surfaec_lessFlat_downsample_size.push_back(surfPointsLessFlat.size());
+
     printf("sort q time %f \n", t_q_sort);
     printf("seperate points time %f \n", t_pts.toc());
 
@@ -511,6 +520,27 @@ int main(int argc, char **argv)
     }
     ros::spin();
 
+    {
+        float plane_feature_aveg = 0;
+        for (const size_t &a: surfaec_flat_size) {
+            plane_feature_aveg += static_cast<float>(a) / static_cast<float>(surfaec_flat_size.size());
+        }
+        printf("\033[1;32m scanRegistration surfaec_flat_size aveg: %f\033[0m\n", plane_feature_aveg);
+    }
+//    {
+//        int plane_feature_aveg = 0;
+//        for (const size_t &a: surfaec_lessFlat_size) {
+//            plane_feature_aveg += a / surfaec_lessFlat_size.size();
+//        }
+//        printf("\033[1;32m scanRegistration surfaec_lessFlat_size aveg: %d\033[0m\n", plane_feature_aveg);
+//    }
+    {
+        float plane_feature_aveg = 0;
+        for (const size_t &a: surfaec_lessFlat_downsample_size) {
+            plane_feature_aveg += static_cast<float>(a) / static_cast<float>(surfaec_lessFlat_downsample_size.size());
+        }
+        printf("\033[1;32m scanRegistration surfaec_lessFlat_downsample_size aveg: %f\033[0m\n", plane_feature_aveg);
+    }
     return 0;
 }
 

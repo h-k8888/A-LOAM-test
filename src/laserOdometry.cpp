@@ -622,10 +622,10 @@ int main(int argc, char **argv)
         rate.sleep();
     }
 
-    int plane_feature_aveg = 0;
+    float plane_feature_aveg = 0;
     for (const size_t& a : plane_feature_size) {
-        plane_feature_aveg += a / plane_feature_size.size();
+        plane_feature_aveg += static_cast<float>(a) / static_cast<float>(plane_feature_size.size());
     }
-    printf("\033[1;32m laserOdometry plane_feature_aveg: %d\033[0m\n", plane_feature_aveg);
+    printf("\033[1;32m laserOdometry less flat aveg: %f\033[0m\n", plane_feature_aveg);
     return 0;
 }

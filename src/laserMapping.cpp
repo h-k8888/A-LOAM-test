@@ -1037,25 +1037,25 @@ int main(int argc, char **argv)
 	ros::spin();
 
     {
-        int surf_extract_num_aveg = 0;
+        float surf_extract_num_aveg = 0;
         for (const size_t &a: surf_extract_num) {
-            surf_extract_num_aveg += a / surf_extract_num.size();
+            surf_extract_num_aveg += static_cast<float>(a) / static_cast<float>(surf_extract_num.size());
         }
-        printf("\033[1;32mlaserMapping surf_extract_num_aveg: %d\033[0m\n", surf_extract_num_aveg);
+        printf("\033[1;32mlaserMapping surf_extract_num_aveg: %f\033[0m\n", surf_extract_num_aveg);
     }
     {
-        int surf_downsample_num_aveg = 0;
+        float surf_downsample_num_aveg = 0;
         for (const size_t &a: surf_downsample_num) {
-            surf_downsample_num_aveg += a / surf_downsample_num.size();
+            surf_downsample_num_aveg += static_cast<float>(a) / static_cast<float>(surf_downsample_num.size());
         }
-        printf("\033[1;32mlaserMapping surf_downsample_num_aveg: %d\033[0m\n", surf_downsample_num_aveg);
+        printf("\033[1;32mlaserMapping surf_downsample_num_aveg: %f\033[0m\n", surf_downsample_num_aveg);
     }
     {
-        int surf_from_map_num_aveg = 0;
+        float surf_from_map_num_aveg = 0;
         for (const size_t &a: surf_from_map_num) {
-            surf_from_map_num_aveg += a / surf_from_map_num.size();
+            surf_from_map_num_aveg += static_cast<float>(a) / static_cast<float>(surf_from_map_num.size());
         }
-        printf("\033[1;32mlaserMapping surf_from_map_num_aveg: %d\033[0m\n", surf_from_map_num_aveg);
+        printf("\033[1;32mlaserMapping surf_from_map_num_aveg: %f\033[0m\n", surf_from_map_num_aveg);
     }
 	return 0;
 }
