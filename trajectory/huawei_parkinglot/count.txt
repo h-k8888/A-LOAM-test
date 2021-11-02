@@ -1,0 +1,47 @@
+a-loam surface flat-less_flat
+ laserOdometry less flat aveg: 5969.297852
+ scanRegistration surfaec_flat_size aveg: 383.991730
+ scanRegistration surfaec_lessFlat_downsample_size aveg: 5969.297852
+laserMapping surf_extract_num_aveg: 5969.297852
+laserMapping surf_downsample_num_aveg: 3021.965820
+laserMapping surf_from_map_num_aveg: 89530.484375
+
+
+a-loam_feature_surface_fast-lio2
+laserMapping surf_extract_num_aveg: 6148.285156
+laserMapping surf_downsample_num_aveg: 1950.698853
+laserMapping surf_from_map_num_aveg: 74716.226562
+terminate called without an active exception
+ laserOdometry less flat aveg: 6148.285156
+ scanRegistration plane_feature_aveg: 6148.285156
+
+
+a-loam odom surface edge map surface
+laserMapping surf_extract_num_aveg: 5969.297852
+laserMapping surf_downsample_num_aveg: 3021.965820
+laserMapping surf_from_map_num_aveg: 89792.828125
+terminate called without an active exception
+ laserOdometry less flat aveg: 5969.297852
+ laserOdometry less sharp aveg: 1455.808594
+ scanRegistration surfaec_flat_size aveg: 383.991730
+ scanRegistration surfaec_lessFlat_downsample_size aveg: 5969.297852
+
+a-loam
+ laserOdometry less flat aveg: 5969.297852
+ laserOdometry less sharp aveg: 1455.808594
+ scanRegistration surfaec_flat_size aveg: 383.991730
+ scanRegistration surfaec_lessFlat_downsample_size aveg: 5969.297852
+laserMapping surf_extract_num_aveg: 5969.297852
+laserMapping surf_downsample_num_aveg: 3021.965820
+laserMapping surf_from_map_num_aveg: 89942.718750
+
+a-loam feature fastlio 
+ scanRegistration plane_feature_aveg: 6148.292969
+laserMapping surf_extract_num_aveg: 6148.292969
+laserMapping surf_downsample_num_aveg: 1950.699585
+laserMapping surf_from_map_num_aveg: 74954.156250
+terminate called without an active exception
+ laserOdometry less flat aveg: 6148.292969
+ laserOdometry less sharp aveg: 312.575195
+
+
