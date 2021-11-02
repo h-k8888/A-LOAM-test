@@ -858,13 +858,19 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr &laserCloudMsg)
 //    }
 //    ROS_INFO("\033[1;32m plane_feature_aveg: %d\033[0m", plane_feature_aveg);
 
+    surfPointsLessFlat.resize(ptr->size());
+    for (int i = 0; i < ptr->size(); ++i) {
+        surfPointsLessFlat.points[i].x = ptr->points[i].x;
+        surfPointsLessFlat.points[i].y = ptr->points[i].y;
+        surfPointsLessFlat.points[i].z = ptr->points[i].z;
+        surfPointsLessFlat.points[i].intensity = ptr->points[i].intensity;
+    }
     surfPointsFlat.resize(ptr->size());
     for (int i = 0; i < ptr->size(); ++i) {
         surfPointsFlat.points[i].x = ptr->points[i].x;
         surfPointsFlat.points[i].y = ptr->points[i].y;
         surfPointsFlat.points[i].z = ptr->points[i].z;
         surfPointsFlat.points[i].intensity = ptr->points[i].intensity;
-//        ROS_INFO("intensity: %f", surfPointsFlat.points[i].intensity);
     }
     /////////
 

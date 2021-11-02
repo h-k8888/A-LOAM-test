@@ -257,10 +257,8 @@ bool saveTrajectory(const nav_msgs::Odometry odom)
     }
     traj_count += 0.1;
     laser_odom_ofs_
-//    << std::setprecision(8)
-//    todo
-//                    << odom.header.stamp.sec << " "
-                    << traj_count << " "
+                    << odom.header.stamp.sec << " "
+//                    << traj_count << " "
                     << odom.pose.pose.position.x << " "
                     << odom.pose.pose.position.y << " "
                     << odom.pose.pose.position.z << " "
@@ -336,7 +334,6 @@ void process()
 			pcl::fromROSMsg(*surfLastBuf.front(), *laserCloudSurfLast);
 			surfLastBuf.pop();
             surf_extract_num.push_back(laserCloudSurfLast->size());
-
 
 
 			laserCloudFullRes->clear();

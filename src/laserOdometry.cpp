@@ -228,12 +228,12 @@ int main(int argc, char **argv)
 //        if (!cornerSharpBuf.empty() && !cornerLessSharpBuf.empty() &&
 //            !surfFlatBuf.empty() && !surfLessFlatBuf.empty() &&
 //            !fullPointsBuf.empty())
-        if (!surfFlatBuf.empty())
+        if (!surfLessFlatBuf.empty() && !surfFlatBuf.empty())
         {
 //            timeCornerPointsSharp = cornerSharpBuf.front()->header.stamp.toSec();
 //            timeCornerPointsLessSharp = cornerLessSharpBuf.front()->header.stamp.toSec();
             timeSurfPointsFlat = surfFlatBuf.front()->header.stamp.toSec();
-//            timeSurfPointsLessFlat = surfLessFlatBuf.front()->header.stamp.toSec();
+            timeSurfPointsLessFlat = surfLessFlatBuf.front()->header.stamp.toSec();
 //            timeLaserCloudFullRes = fullPointsBuf.front()->header.stamp.toSec();
 
 //            if (timeCornerPointsSharp != timeLaserCloudFullRes ||
@@ -257,7 +257,12 @@ int main(int argc, char **argv)
             surfPointsFlat->clear();
             pcl::fromROSMsg(*surfFlatBuf.front(), *surfPointsFlat);
             surfFlatBuf.pop();
-            plane_feature_size.push_back(surfPointsFlat->size());
+
+
+            surfPointsLessFlat->clear();
+            pcl::fromROSMsg(*surfLessFlatBuf.front(), *surfPointsLessFlat);
+            surfLessFlatBuf.pop();
+            plane_feature_size.push_back(surfPointsLessFlat->size());
 //            int plane_feature_aveg = 0;
 //            for (const size_t& a : plane_feature_size) {
 //                plane_feature_aveg += a / plane_feature_size.size();
@@ -265,15 +270,11 @@ int main(int argc, char **argv)
 //            ROS_INFO("\033[1;32m laserOdometry plane_feature_aveg: %d\033[0m", plane_feature_aveg);
 
 
-//            surfPointsLessFlat->clear();
-//            pcl::fromROSMsg(*surfLessFlatBuf.front(), *surfPointsLessFlat);
-//            surfLessFlatBuf.pop();
-//
 //            laserCloudFullRes->clear();
 //            pcl::fromROSMsg(*fullPointsBuf.front(), *laserCloudFullRes);
 //            fullPointsBuf.pop();
             mBuf.unlock();
-//
+
             TicToc t_whole;
             // initializing
             if (!systemInited)// 第一帧不进行匹配，仅仅将 cornerPointsLessSharp 保存至 laserCloudCornerLast
@@ -401,6 +402,7 @@ int main(int argc, char **argv)
 //                    }
                     // 下面说的点符号与上述相同
                     // 与上面的建立corner特征点之间的关联类似，寻找平面特征点O的最近邻点ABC，即基于最近邻原理建立surf特征点之间的关联，find correspondence for plane features
+                    /// odometry配尊时是当前帧flat与上一帧的LessFlat
                     for (int i = 0; i < surfPointsFlatNum; ++i)
                     {
                         TransformToStart(&(surfPointsFlat->points[i]), &pointSel);
@@ -576,8 +578,8 @@ int main(int argc, char **argv)
 //            cornerPointsLessSharp = laserCloudCornerLast;
 //            laserCloudCornerLast = laserCloudTemp;
 
-            pcl::PointCloud<PointType>::Ptr laserCloudTemp = surfPointsFlat;
-            surfPointsFlat = laserCloudSurfLast;
+            pcl::PointCloud<PointType>::Ptr laserCloudTemp = surfPointsLessFlat;
+            surfPointsLessFlat = laserCloudSurfLast;
             laserCloudSurfLast = laserCloudTemp;
 
 //            laserCloudCornerLastNum = laserCloudCornerLast->points.size();
