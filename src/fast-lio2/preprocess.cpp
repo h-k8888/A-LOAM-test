@@ -47,7 +47,9 @@ void Preprocess::set(bool feat_en, int lid_type, double bld, int pfilt_num)
 //  *pcl_out = pl_surf; // 储存间隔采样点
 //}
 
-void Preprocess::process(const sensor_msgs::PointCloud2::ConstPtr &msg, PointCloudXYZI::Ptr &pcl_out)
+void Preprocess::process(const sensor_msgs::PointCloud2::ConstPtr &msg
+                         , PointCloudXYZI::Ptr &pcl_surf_out
+                         , PointCloudXYZI::Ptr &pcl_corn_out)
 {
   switch (lidar_type)
   {
@@ -63,7 +65,8 @@ void Preprocess::process(const sensor_msgs::PointCloud2::ConstPtr &msg, PointClo
     printf("Error LiDAR Type");
     break;
   }
-  *pcl_out = pl_surf;
+  *pcl_surf_out = pl_surf;
+  *pcl_corn_out = pl_corn;
 }
 
 //void Preprocess::avia_handler(const livox_ros_driver::CustomMsg::ConstPtr &msg)

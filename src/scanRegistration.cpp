@@ -847,30 +847,43 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr &laserCloudMsg)
     //todo feature extraction from fast-lio2
 
     //////////
-    PointCloudXYZI::Ptr  ptr(new PointCloudXYZI());
-    p_pre->process(laserCloudMsg, ptr);
+    PointCloudXYZI::Ptr  surf_ptr(new PointCloudXYZI());
+    PointCloudXYZI::Ptr  corn_ptr(new PointCloudXYZI());
+    p_pre->process(laserCloudMsg, surf_ptr, corn_ptr);
 //    ROS_INFO("ptr.size(): %d", ptr->size());
 
-    plane_feature_size.emplace_back(ptr->size());
-//    int plane_feature_aveg = 0;
-//    for (const size_t& a : plane_feature_size) {
-//        plane_feature_aveg += a / plane_feature_size.size();
-//    }
-//    ROS_INFO("\033[1;32m plane_feature_aveg: %d\033[0m", plane_feature_aveg);
+    plane_feature_size.emplace_back(surf_ptr->size());
 
-    surfPointsLessFlat.resize(ptr->size());
-    for (int i = 0; i < ptr->size(); ++i) {
-        surfPointsLessFlat.points[i].x = ptr->points[i].x;
-        surfPointsLessFlat.points[i].y = ptr->points[i].y;
-        surfPointsLessFlat.points[i].z = ptr->points[i].z;
-        surfPointsLessFlat.points[i].intensity = ptr->points[i].intensity;
+    surfPointsLessFlat.resize(surf_ptr->size());
+    for (int i = 0; i < surf_ptr->size(); ++i) {
+        surfPointsLessFlat.points[i].x = surf_ptr->points[i].x;
+        surfPointsLessFlat.points[i].y = surf_ptr->points[i].y;
+        surfPointsLessFlat.points[i].z = surf_ptr->points[i].z;
+        surfPointsLessFlat.points[i].intensity = surf_ptr->points[i].intensity;
     }
-    surfPointsFlat.resize(ptr->size());
-    for (int i = 0; i < ptr->size(); ++i) {
-        surfPointsFlat.points[i].x = ptr->points[i].x;
-        surfPointsFlat.points[i].y = ptr->points[i].y;
-        surfPointsFlat.points[i].z = ptr->points[i].z;
-        surfPointsFlat.points[i].intensity = ptr->points[i].intensity;
+
+    surfPointsFlat.resize(surf_ptr->size());
+    for (int i = 0; i < surf_ptr->size(); ++i) {
+        surfPointsFlat.points[i].x = surf_ptr->points[i].x;
+        surfPointsFlat.points[i].y = surf_ptr->points[i].y;
+        surfPointsFlat.points[i].z = surf_ptr->points[i].z;
+        surfPointsFlat.points[i].intensity = surf_ptr->points[i].intensity;
+    }
+
+    cornerPointsLessSharp.resize(corn_ptr->size());
+    for (int i = 0; i < corn_ptr->size(); ++i) {
+        cornerPointsLessSharp.points[i].x = corn_ptr->points[i].x;
+        cornerPointsLessSharp.points[i].y = corn_ptr->points[i].y;
+        cornerPointsLessSharp.points[i].z = corn_ptr->points[i].z;
+        cornerPointsLessSharp.points[i].intensity = corn_ptr->points[i].intensity;
+    }
+
+    cornerPointsSharp.resize(corn_ptr->size());
+    for (int i = 0; i < corn_ptr->size(); ++i) {
+        cornerPointsSharp.points[i].x = corn_ptr->points[i].x;
+        cornerPointsSharp.points[i].y = corn_ptr->points[i].y;
+        cornerPointsSharp.points[i].z = corn_ptr->points[i].z;
+        cornerPointsSharp.points[i].intensity = corn_ptr->points[i].intensity;
     }
     /////////
 
