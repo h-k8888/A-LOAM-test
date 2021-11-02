@@ -73,6 +73,9 @@ int cloudSortInd[400000];
 int cloudNeighborPicked[400000];
 int cloudLabel[400000];
 
+vector<size_t> plane_feature_size;
+vector<size_t> edge_feature_size;
+
 bool comp (int i,int j) { return (cloudCurvature[i]<cloudCurvature[j]); }
 
 ros::Publisher pubLaserCloud;
@@ -847,6 +850,14 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr &laserCloudMsg)
     PointCloudXYZI::Ptr  ptr(new PointCloudXYZI());
     p_pre->process(laserCloudMsg, ptr);
 //    ROS_INFO("ptr.size(): %d", ptr->size());
+
+    plane_feature_size.emplace_back(ptr->size());
+//    int plane_feature_aveg = 0;
+//    for (const size_t& a : plane_feature_size) {
+//        plane_feature_aveg += a / plane_feature_size.size();
+//    }
+//    ROS_INFO("\033[1;32m plane_feature_aveg: %d\033[0m", plane_feature_aveg);
+
     surfPointsFlat.resize(ptr->size());
     for (int i = 0; i < ptr->size(); ++i) {
         surfPointsFlat.points[i].x = ptr->points[i].x;
@@ -1124,6 +1135,12 @@ int main(int argc, char **argv)
         }
     }
     ros::spin();
+
+    int plane_feature_aveg = 0;
+    for (const size_t& a : plane_feature_size) {
+        plane_feature_aveg += a / plane_feature_size.size();
+    }
+    printf("\033[1;32m scanRegistration plane_feature_aveg: %d\033[0m\n", plane_feature_aveg);
 
     return 0;
 }

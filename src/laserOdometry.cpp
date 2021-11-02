@@ -109,6 +109,8 @@ std::queue<sensor_msgs::PointCloud2ConstPtr> surfLessFlatBuf;
 std::queue<sensor_msgs::PointCloud2ConstPtr> fullPointsBuf;
 std::mutex mBuf;
 
+std::vector<size_t> plane_feature_size;
+
 // undistort lidar point
 void TransformToStart(PointType const *const pi, PointType *const po)
 {
@@ -255,6 +257,13 @@ int main(int argc, char **argv)
             surfPointsFlat->clear();
             pcl::fromROSMsg(*surfFlatBuf.front(), *surfPointsFlat);
             surfFlatBuf.pop();
+            plane_feature_size.push_back(surfPointsFlat->size());
+//            int plane_feature_aveg = 0;
+//            for (const size_t& a : plane_feature_size) {
+//                plane_feature_aveg += a / plane_feature_size.size();
+//            }
+//            ROS_INFO("\033[1;32m laserOdometry plane_feature_aveg: %d\033[0m", plane_feature_aveg);
+
 
 //            surfPointsLessFlat->clear();
 //            pcl::fromROSMsg(*surfLessFlatBuf.front(), *surfPointsLessFlat);
@@ -610,5 +619,11 @@ int main(int argc, char **argv)
         }
         rate.sleep();
     }
+
+    int plane_feature_aveg = 0;
+    for (const size_t& a : plane_feature_size) {
+        plane_feature_aveg += a / plane_feature_size.size();
+    }
+    printf("\033[1;32m laserOdometry plane_feature_aveg: %d\033[0m\n", plane_feature_aveg);
     return 0;
 }

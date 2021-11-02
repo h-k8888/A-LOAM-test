@@ -191,6 +191,10 @@ void pointAssociateTobeMapped(PointType const *const pi, PointType *const po)
 //	mBuf.unlock();
 //}
 
+std::vector<size_t> surf_extract_num;
+std::vector<size_t> surf_downsample_num;
+std::vector<size_t> surf_from_map_num;
+
 void laserCloudSurfLastHandler(const sensor_msgs::PointCloud2ConstPtr &laserCloudSurfLast2)
 {
 	mBuf.lock();
@@ -331,6 +335,9 @@ void process()
 			laserCloudSurfLast->clear();
 			pcl::fromROSMsg(*surfLastBuf.front(), *laserCloudSurfLast);
 			surfLastBuf.pop();
+            surf_extract_num.push_back(laserCloudSurfLast->size());
+
+
 
 			laserCloudFullRes->clear();
 			pcl::fromROSMsg(*fullResBuf.front(), *laserCloudFullRes);
@@ -605,17 +612,22 @@ void process()
 			}
 //			int laserCloudCornerFromMapNum = laserCloudCornerFromMap->points.size();
 			int laserCloudSurfFromMapNum = laserCloudSurfFromMap->points.size();
-
+            // 记录地图平面特征点数
+            surf_from_map_num.push_back(laserCloudSurfFromMapNum);
 
 //			pcl::PointCloud<PointType>::Ptr laserCloudCornerStack(new pcl::PointCloud<PointType>());//最新降采样后点云
 //			downSizeFilterCorner.setInputCloud(laserCloudCornerLast);
 //			downSizeFilterCorner.filter(*laserCloudCornerStack);
 //			int laserCloudCornerStackNum = laserCloudCornerStack->points.size();
 
+            //对当前帧平面点降采样
 			pcl::PointCloud<PointType>::Ptr laserCloudSurfStack(new pcl::PointCloud<PointType>());
 			downSizeFilterSurf.setInputCloud(laserCloudSurfLast);
 			downSizeFilterSurf.filter(*laserCloudSurfStack);
 			int laserCloudSurfStackNum = laserCloudSurfStack->points.size();
+            // 记录当前帧用于配准（降采样后）的平面特征点数
+            surf_downsample_num.push_back(laserCloudSurfStackNum);
+
 
 			printf("map prepare time %f ms\n", t_shift.toc());
 			printf("map surf num %d \n", laserCloudSurfFromMapNum);
@@ -843,6 +855,7 @@ void process()
 //				}
 //			}
 
+            //新的平面特征点加入地图
 			for (int i = 0; i < laserCloudSurfStackNum; i++)
 			{
 				pointAssociateToMap(&laserCloudSurfStack->points[i], &pointSel);
@@ -872,6 +885,7 @@ void process()
 			TicToc t_filter;
 			// 因为新增加了点云，对之前已经存有点云的cube全部重新进行一次降采样
 			// 这个地方可以简单优化一下：如果之前的cube没有新添加点就不需要再降采样
+            // 对地图降采样
 			for (int i = 0; i < laserCloudValidNum; i++)
 			{
 				int ind = laserCloudValidInd[i];
@@ -1025,5 +1039,26 @@ int main(int argc, char **argv)
 
 	ros::spin();
 
+    {
+        int surf_extract_num_aveg = 0;
+        for (const size_t &a: surf_extract_num) {
+            surf_extract_num_aveg += a / surf_extract_num.size();
+        }
+        printf("\033[1;32mlaserMapping surf_extract_num_aveg: %d\033[0m\n", surf_extract_num_aveg);
+    }
+    {
+        int surf_downsample_num_aveg = 0;
+        for (const size_t &a: surf_downsample_num) {
+            surf_downsample_num_aveg += a / surf_downsample_num.size();
+        }
+        printf("\033[1;32mlaserMapping surf_downsample_num_aveg: %d\033[0m\n", surf_downsample_num_aveg);
+    }
+    {
+        int surf_from_map_num_aveg = 0;
+        for (const size_t &a: surf_from_map_num) {
+            surf_from_map_num_aveg += a / surf_from_map_num.size();
+        }
+        printf("\033[1;32mlaserMapping surf_from_map_num_aveg: %d\033[0m\n", surf_from_map_num_aveg);
+    }
 	return 0;
 }
