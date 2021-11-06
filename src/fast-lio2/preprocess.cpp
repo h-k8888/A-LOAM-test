@@ -944,7 +944,6 @@ bool Preprocess::edge_jump_judge(const PointCloudXYZI &pl, vector<orgtype> &type
 }
 
 void Preprocess::rs_handler(const sensor_msgs::PointCloud2_<allocator<void>>::ConstPtr &msg) {
-    ROS_INFO("RS LIDAR");
     pl_surf.clear();
     pl_corn.clear();
     pl_full.clear();
@@ -952,6 +951,10 @@ void Preprocess::rs_handler(const sensor_msgs::PointCloud2_<allocator<void>>::Co
     pcl::PointCloud<rslidar_ros::Point> pl_orig;
     pcl::fromROSMsg(*msg, pl_orig);
     int plsize = pl_orig.points.size();
+    ROS_INFO("RS LIDAR, plsize = %d", plsize);
+//    if(plsize == 0)
+//        ROS_BREAK();
+
     pl_surf.reserve(plsize);
 
     /*** These variables only works when no point timestamps given ***/
