@@ -147,6 +147,9 @@ ros::Publisher pubLaserCloudSurround, pubLaserCloudMap, pubLaserCloudFullRes, pu
 
 nav_msgs::Path laserAfterMappedPath;
 
+int save_map = 0;
+std::string map_file;
+
 // set initial guess，上一帧的增量wmap_wodom * 本帧Odometry位姿wodom_curr，旨在为本帧Mapping位姿w_curr设置一个初始值
 void transformAssociateToMap()
 {
@@ -1008,7 +1011,10 @@ int main(int argc, char **argv)
 	nh.param<float>("mapping_line_resolution", lineRes, 0.4);
 	nh.param<float>("mapping_plane_resolution", planeRes, 0.8);
     nh.param<std::string>("output_odom_file",odom_file,"/tmp/laser_odom.txt");
-	printf("line resolution %f plane resolution %f \n", lineRes, planeRes);
+    nh.param<std::string>("output_map_file",map_file,"/tmp/map.pcd");
+    nh.param<int>("save_map",save_map,0);
+
+    printf("line resolution %f plane resolution %f \n", lineRes, planeRes);
 	downSizeFilterCorner.setLeafSize(lineRes, lineRes,lineRes);
 	downSizeFilterSurf.setLeafSize(planeRes, planeRes, planeRes);
 
@@ -1063,5 +1069,16 @@ int main(int argc, char **argv)
         }
         printf("\033[1;32mlaserMapping surf_from_map_num_aveg: %f\033[0m\n", surf_from_map_num_aveg);
     }
-	return 0;
+
+    if(save_map != 0)
+    {
+        printf("\033[1;33msave map to: %s\033[0m\n", map_file.c_str());
+        pcl::PointCloud<PointType> laserCloudMap;
+        for (int i = 0; i < 4851; i++) {
+            laserCloudMap += *laserCloudCornerArray[i];
+            laserCloudMap += *laserCloudSurfArray[i];
+        }
+        pcl::io::savePCDFile(map_file, laserCloudMap);
+    }
+    return 0;
 }

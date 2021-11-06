@@ -15,9 +15,13 @@
     <param name="preprocess/lidar_type" type="int" value="4"/>
     <param name="preprocess/scan_line" type="int" value="128"/>
 
+    <!-- save map to pcd file-->
+    <param name="output_map_file" type="string" value="/tmp/map.pcd"/>
+    <param name="save_map" type="int" value="1"/>
+
     <!-- mapping resolution-->
     <param name="mapping_line_resolution" type="double" value="0.4"/>
-    <param name="mapping_plane_resolution" type="double" value="0.5"/>
+    <param name="mapping_plane_resolution" type="double" value="0.4"/>
 
     <node pkg="aloam_velodyne" type="ascanRegistration" name="ascanRegistration" output="screen" />
 

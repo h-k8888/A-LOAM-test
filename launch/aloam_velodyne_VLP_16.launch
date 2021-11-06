@@ -9,6 +9,11 @@
     <param name="minimum_range" type="double" value="0.3"/>
 
     <param name="output_odom_file" type="string" value="/home/hk/ws_a-loam-noted/src/trajectory/laser_odom_feature_fast-lio2.txt"/>
+
+    <!-- save map to pcd file-->
+    <param name="output_map_file" type="string" value="/tmp/map.pcd"/>
+    <param name="save_map" type="int" value="1"/>
+
     <param name="mapping_line_resolution" type="double" value="0.2"/>
     <param name="mapping_plane_resolution" type="double" value="0.4"/>
 
