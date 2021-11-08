@@ -259,8 +259,9 @@ bool saveTrajectory(const nav_msgs::Odometry odom)
         return false;
     }
 //    traj_count += 0.1;
-    laser_odom_ofs_
-                    << odom.header.stamp.sec << " "
+    laser_odom_ofs_.setf(std::ios::fixed, std::ios::floatfield);
+    laser_odom_ofs_.precision(8);
+    laser_odom_ofs_ << odom.header.stamp.toSec() << " "
 //                    << traj_count << " "
                     << odom.pose.pose.position.x << " "
                     << odom.pose.pose.position.y << " "
@@ -1011,6 +1012,14 @@ int main(int argc, char **argv)
     printf("line resolution %f plane resolution %f \n", lineRes, planeRes);
 	downSizeFilterCorner.setLeafSize(lineRes, lineRes,lineRes);
 	downSizeFilterSurf.setLeafSize(planeRes, planeRes, planeRes);
+
+    //build output odom file(tum)
+    laser_odom_ofs_.open(odom_file, std::ios::out);
+    if (!laser_odom_ofs_) {
+        LOG(WARNING) << "无法生成文件: " << std::endl << odom_file << std::endl;
+        return false;
+    }
+    laser_odom_ofs_.close();
 
 //	ros::Subscriber subLaserCloudCornerLast = nh.subscribe<sensor_msgs::PointCloud2>("/laser_cloud_corner_last", 100, laserCloudCornerLastHandler);
 
