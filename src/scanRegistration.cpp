@@ -1110,9 +1110,9 @@ int main(int argc, char **argv)
 
     printf("scan line number %d \n", N_SCANS);
 
-    if(N_SCANS != 16 && N_SCANS != 32 && N_SCANS != 64)
+    if(N_SCANS != 16 && N_SCANS != 32 && N_SCANS != 64 && N_SCANS != 128)
     {
-        printf("only support velodyne with 16, 32 or 64 scan line!");
+        printf("only support velodyne with 16, 32, 64 or 128 scan line!");
         return 0;
     }
 

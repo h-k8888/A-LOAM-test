@@ -98,7 +98,7 @@ pcl::PointCloud<PointType>::Ptr laserCloudSurround(new pcl::PointCloud<PointType
 pcl::PointCloud<PointType>::Ptr laserCloudSurfFromMap(new pcl::PointCloud<PointType>());
 
 //input & output: points in one frame. local --> global
-pcl::PointCloud<PointType>::Ptr laserCloudFullRes(new pcl::PointCloud<PointType>());
+//pcl::PointCloud<PointType>::Ptr laserCloudFullRes(new pcl::PointCloud<PointType>());
 
 // 存放cube点云特征的数组，数组大小4851，points in every cube
 //pcl::PointCloud<PointType>::Ptr laserCloudCornerArray[laserCloudNum];
@@ -131,7 +131,7 @@ Eigen::Vector3d t_wodom_curr(0, 0, 0);
 
 //std::queue<sensor_msgs::PointCloud2ConstPtr> cornerLastBuf;
 std::queue<sensor_msgs::PointCloud2ConstPtr> surfLastBuf;
-std::queue<sensor_msgs::PointCloud2ConstPtr> fullResBuf;
+//std::queue<sensor_msgs::PointCloud2ConstPtr> fullResBuf;
 std::queue<nav_msgs::Odometry::ConstPtr> odometryBuf;
 std::mutex mBuf;
 
@@ -146,6 +146,9 @@ PointType pointOri, pointSel;
 ros::Publisher pubLaserCloudSurround, pubLaserCloudMap, pubLaserCloudFullRes, pubOdomAftMapped, pubOdomAftMappedHighFrec, pubLaserAfterMappedPath;
 
 nav_msgs::Path laserAfterMappedPath;
+
+int save_map = 0;
+std::string map_file;
 
 // set initial guess，上一帧的增量wmap_wodom * 本帧Odometry位姿wodom_curr，旨在为本帧Mapping位姿w_curr设置一个初始值
 void transformAssociateToMap()
@@ -202,12 +205,12 @@ void laserCloudSurfLastHandler(const sensor_msgs::PointCloud2ConstPtr &laserClou
 	mBuf.unlock();
 }
 
-void laserCloudFullResHandler(const sensor_msgs::PointCloud2ConstPtr &laserCloudFullRes2)
-{
-	mBuf.lock();
-	fullResBuf.push(laserCloudFullRes2);
-	mBuf.unlock();
-}
+//void laserCloudFullResHandler(const sensor_msgs::PointCloud2ConstPtr &laserCloudFullRes2)
+//{
+//	mBuf.lock();
+//	fullResBuf.push(laserCloudFullRes2);
+//	mBuf.unlock();
+//}
 
 // receive odomtry
 void laserOdometryHandler(const nav_msgs::Odometry::ConstPtr &laserOdometry)
@@ -247,7 +250,7 @@ void laserOdometryHandler(const nav_msgs::Odometry::ConstPtr &laserOdometry)
 }
 std::string odom_file;
 std::ofstream laser_odom_ofs_;
-float traj_count = 0.0;
+//float traj_count = 0.0;
 bool saveTrajectory(const nav_msgs::Odometry odom)
 {
     laser_odom_ofs_.open(odom_file, std::ios::app);
@@ -255,7 +258,7 @@ bool saveTrajectory(const nav_msgs::Odometry odom)
         LOG(WARNING) << "无法生成文件: " << std::endl << odom_file << std::endl;
         return false;
     }
-    traj_count += 0.1;
+//    traj_count += 0.1;
     laser_odom_ofs_
                     << odom.header.stamp.sec << " "
 //                    << traj_count << " "
@@ -301,26 +304,26 @@ void process()
 
 			// fullResBuf也如此
 //			while (!fullResBuf.empty() && fullResBuf.front()->header.stamp.toSec() < cornerLastBuf.front()->header.stamp.toSec())
-            while (!fullResBuf.empty() && fullResBuf.front()->header.stamp.toSec() < surfLastBuf.front()->header.stamp.toSec())
-				fullResBuf.pop();
-			if (fullResBuf.empty())
-			{
-				mBuf.unlock();
-                break;
-			}
+//            while (!fullResBuf.empty() && fullResBuf.front()->header.stamp.toSec() < surfLastBuf.front()->header.stamp.toSec())
+//				fullResBuf.pop();
+//			if (fullResBuf.empty())
+//			{
+//				mBuf.unlock();
+//                break;
+//			}
 
 //			timeLaserCloudCornerLast = cornerLastBuf.front()->header.stamp.toSec();
 			timeLaserCloudSurfLast = surfLastBuf.front()->header.stamp.toSec();
-			timeLaserCloudFullRes = fullResBuf.front()->header.stamp.toSec();
+//			timeLaserCloudFullRes = fullResBuf.front()->header.stamp.toSec();
 			timeLaserOdometry = odometryBuf.front()->header.stamp.toSec();
 
 //			if (timeLaserCloudCornerLast != timeLaserOdometry ||
 //				timeLaserCloudSurfLast != timeLaserOdometry ||
 //				timeLaserCloudFullRes != timeLaserOdometry)
-            if (timeLaserCloudSurfLast != timeLaserOdometry ||
-                timeLaserCloudFullRes != timeLaserOdometry)
+            if (timeLaserCloudSurfLast != timeLaserOdometry)
 			{
-				printf("time surf %f full %f odom %f \n",  timeLaserCloudSurfLast, timeLaserCloudFullRes, timeLaserOdometry);
+//				printf("time surf %f full %f odom %f \n",  timeLaserCloudSurfLast, timeLaserCloudFullRes, timeLaserOdometry);
+                printf("time surf %f odom %f \n",  timeLaserCloudSurfLast, timeLaserOdometry);
 				printf("unsync messeage!");
 				mBuf.unlock();
 				break;
@@ -336,9 +339,9 @@ void process()
             surf_extract_num.push_back(laserCloudSurfLast->size());
 
 
-			laserCloudFullRes->clear();
-			pcl::fromROSMsg(*fullResBuf.front(), *laserCloudFullRes);
-			fullResBuf.pop();
+//			laserCloudFullRes->clear();
+//			pcl::fromROSMsg(*fullResBuf.front(), *laserCloudFullRes);
+//			fullResBuf.pop();
 
 			q_wodom_curr.x() = odometryBuf.front()->pose.pose.orientation.x;
 			q_wodom_curr.y() = odometryBuf.front()->pose.pose.orientation.y;
@@ -933,17 +936,17 @@ void process()
 				pubLaserCloudMap.publish(laserCloudMsg);
 			}
 
-			int laserCloudFullResNum = laserCloudFullRes->points.size();
-			for (int i = 0; i < laserCloudFullResNum; i++)
-			{
-				pointAssociateToMap(&laserCloudFullRes->points[i], &laserCloudFullRes->points[i]);
-			}
+//			int laserCloudFullResNum = laserCloudFullRes->points.size();
+//			for (int i = 0; i < laserCloudFullResNum; i++)
+//			{
+//				pointAssociateToMap(&laserCloudFullRes->points[i], &laserCloudFullRes->points[i]);
+//			}
 
-			sensor_msgs::PointCloud2 laserCloudFullRes3;
-			pcl::toROSMsg(*laserCloudFullRes, laserCloudFullRes3);
-			laserCloudFullRes3.header.stamp = ros::Time().fromSec(timeLaserOdometry);
-			laserCloudFullRes3.header.frame_id = "/camera_init";
-			pubLaserCloudFullRes.publish(laserCloudFullRes3);
+//			sensor_msgs::PointCloud2 laserCloudFullRes3;
+//			pcl::toROSMsg(*laserCloudFullRes, laserCloudFullRes3);
+//			laserCloudFullRes3.header.stamp = ros::Time().fromSec(timeLaserOdometry);
+//			laserCloudFullRes3.header.frame_id = "/camera_init";
+//			pubLaserCloudFullRes.publish(laserCloudFullRes3);
 
 			printf("mapping pub time %f ms \n", t_pub.toc());
 
@@ -1002,7 +1005,10 @@ int main(int argc, char **argv)
 	nh.param<float>("mapping_line_resolution", lineRes, 0.4);
 	nh.param<float>("mapping_plane_resolution", planeRes, 0.8);
     nh.param<std::string>("output_odom_file",odom_file,"/tmp/laser_odom.txt");
-	printf("line resolution %f plane resolution %f \n", lineRes, planeRes);
+    nh.param<std::string>("output_map_file",map_file,"/tmp/map.pcd");
+    nh.param<int>("save_map",save_map,0);
+
+    printf("line resolution %f plane resolution %f \n", lineRes, planeRes);
 	downSizeFilterCorner.setLeafSize(lineRes, lineRes,lineRes);
 	downSizeFilterSurf.setLeafSize(planeRes, planeRes, planeRes);
 
@@ -1012,13 +1018,13 @@ int main(int argc, char **argv)
 
 	ros::Subscriber subLaserOdometry = nh.subscribe<nav_msgs::Odometry>("/laser_odom_to_init", 100, laserOdometryHandler);
 
-	ros::Subscriber subLaserCloudFullRes = nh.subscribe<sensor_msgs::PointCloud2>("/velodyne_cloud_3", 100, laserCloudFullResHandler);
+//	ros::Subscriber subLaserCloudFullRes = nh.subscribe<sensor_msgs::PointCloud2>("/velodyne_cloud_3", 100, laserCloudFullResHandler);
 
 	pubLaserCloudSurround = nh.advertise<sensor_msgs::PointCloud2>("/laser_cloud_surround", 100);
 
 	pubLaserCloudMap = nh.advertise<sensor_msgs::PointCloud2>("/laser_cloud_map", 100);
 
-	pubLaserCloudFullRes = nh.advertise<sensor_msgs::PointCloud2>("/velodyne_cloud_registered", 100);
+//	pubLaserCloudFullRes = nh.advertise<sensor_msgs::PointCloud2>("/velodyne_cloud_registered", 100);
 
 	pubOdomAftMapped = nh.advertise<nav_msgs::Odometry>("/aft_mapped_to_init", 100);
 
@@ -1057,5 +1063,16 @@ int main(int argc, char **argv)
         }
         printf("\033[1;32mlaserMapping surf_from_map_num_aveg: %f\033[0m\n", surf_from_map_num_aveg);
     }
-	return 0;
+
+    if(save_map != 0)
+    {
+        printf("\033[1;33msave map to: %s\033[0m\n", map_file.c_str());
+        pcl::PointCloud<PointType> laserCloudMap;
+        for (int i = 0; i < 4851; i++) {
+//            laserCloudMap += *laserCloudCornerArray[i];
+            laserCloudMap += *laserCloudSurfArray[i];
+        }
+        pcl::io::savePCDFile(map_file, laserCloudMap);
+    }
+    return 0;
 }
