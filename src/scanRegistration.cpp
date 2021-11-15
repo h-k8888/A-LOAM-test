@@ -678,7 +678,7 @@ shared_ptr<Preprocess> p_pre(new Preprocess());
 void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr &laserCloudMsg)
 {
     if (!systemInited)
-    { 
+    {
         systemInitCount++;
         if (systemInitCount >= systemDelay)
         {
@@ -855,9 +855,10 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr &laserCloudMsg)
     int num_surf_pts = static_cast<int>(surf_ptr->size());
     ROS_INFO("number surface points: %d", num_surf_pts);
     int num_corner_pts = static_cast<int>(corn_ptr->size());
-
+    ROS_INFO("number corner points: %d", num_corner_pts);
 
     plane_feature_size.emplace_back(num_surf_pts);
+    edge_feature_size.emplace_back(num_corner_pts);
 
     surfPointsLessFlat.resize(num_surf_pts);
     for (int i = 0; i < num_surf_pts; ++i) {
@@ -1166,6 +1167,13 @@ int main(int argc, char **argv)
             plane_feature_aveg += static_cast<float>(a) / static_cast<float>(plane_feature_size.size());
         }
         printf("\033[1;32m scanRegistration plane_feature_aveg: %f\033[0m\n", plane_feature_aveg);
+    }
+    {
+        float edge_feature_aveg = 0;
+        for (const size_t &a: edge_feature_size) {
+            edge_feature_aveg += static_cast<float>(a) / static_cast<float>(edge_feature_size.size());
+        }
+        printf("\033[1;32m scanRegistration edge_feature_aveg: %f\033[0m\n", edge_feature_aveg);
     }
 
     return 0;
