@@ -73,7 +73,7 @@ int cloudSortInd[400000];
 int cloudNeighborPicked[400000];
 int cloudLabel[400000];
 
-vector<size_t> plane_feature_size;
+//vector<size_t> plane_feature_size;
 vector<size_t> edge_feature_size;
 
 bool comp (int i,int j) { return (cloudCurvature[i]<cloudCurvature[j]); }
@@ -852,29 +852,29 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr &laserCloudMsg)
     p_pre->process(laserCloudMsg, surf_ptr, corn_ptr);
 //    ROS_INFO("ptr.size(): %d", ptr->size());
 
-    int num_surf_pts = static_cast<int>(surf_ptr->size());
-    ROS_INFO("number surface points: %d", num_surf_pts);
+//    int num_surf_pts = static_cast<int>(surf_ptr->size());
+//    ROS_INFO("number surface points: %d", num_surf_pts);
     int num_corner_pts = static_cast<int>(corn_ptr->size());
     ROS_INFO("number corner points: %d", num_corner_pts);
 
-    plane_feature_size.emplace_back(num_surf_pts);
+//    plane_feature_size.emplace_back(num_surf_pts);
     edge_feature_size.emplace_back(num_corner_pts);
 
-    surfPointsLessFlat.resize(num_surf_pts);
-    for (int i = 0; i < num_surf_pts; ++i) {
-        surfPointsLessFlat.points[i].x = surf_ptr->points[i].x;
-        surfPointsLessFlat.points[i].y = surf_ptr->points[i].y;
-        surfPointsLessFlat.points[i].z = surf_ptr->points[i].z;
-        surfPointsLessFlat.points[i].intensity = surf_ptr->points[i].intensity;
-    }
-
-    surfPointsFlat.resize(num_surf_pts);
-    for (int i = 0; i < num_surf_pts; ++i) {
-        surfPointsFlat.points[i].x = surf_ptr->points[i].x;
-        surfPointsFlat.points[i].y = surf_ptr->points[i].y;
-        surfPointsFlat.points[i].z = surf_ptr->points[i].z;
-        surfPointsFlat.points[i].intensity = surf_ptr->points[i].intensity;
-    }
+//    surfPointsLessFlat.resize(num_surf_pts);
+//    for (int i = 0; i < num_surf_pts; ++i) {
+//        surfPointsLessFlat.points[i].x = surf_ptr->points[i].x;
+//        surfPointsLessFlat.points[i].y = surf_ptr->points[i].y;
+//        surfPointsLessFlat.points[i].z = surf_ptr->points[i].z;
+//        surfPointsLessFlat.points[i].intensity = surf_ptr->points[i].intensity;
+//    }
+//
+//    surfPointsFlat.resize(num_surf_pts);
+//    for (int i = 0; i < num_surf_pts; ++i) {
+//        surfPointsFlat.points[i].x = surf_ptr->points[i].x;
+//        surfPointsFlat.points[i].y = surf_ptr->points[i].y;
+//        surfPointsFlat.points[i].z = surf_ptr->points[i].z;
+//        surfPointsFlat.points[i].intensity = surf_ptr->points[i].intensity;
+//    }
 
     cornerPointsLessSharp.resize(num_corner_pts);
     for (int i = 0; i < num_corner_pts; ++i) {
@@ -1161,13 +1161,13 @@ int main(int argc, char **argv)
     }
     ros::spin();
 
-    {
-        float plane_feature_aveg = 0;
-        for (const size_t &a: plane_feature_size) {
-            plane_feature_aveg += static_cast<float>(a) / static_cast<float>(plane_feature_size.size());
-        }
-        printf("\033[1;32m scanRegistration plane_feature_aveg: %f\033[0m\n", plane_feature_aveg);
-    }
+//    {
+//        float plane_feature_aveg = 0;
+//        for (const size_t &a: plane_feature_size) {
+//            plane_feature_aveg += static_cast<float>(a) / static_cast<float>(plane_feature_size.size());
+//        }
+//        printf("\033[1;32m scanRegistration plane_feature_aveg: %f\033[0m\n", plane_feature_aveg);
+//    }
     {
         float edge_feature_aveg = 0;
         for (const size_t &a: edge_feature_size) {

@@ -88,14 +88,14 @@ int laserCloudSurroundInd[125];
 
 // input: from odom
 pcl::PointCloud<PointType>::Ptr laserCloudCornerLast(new pcl::PointCloud<PointType>());
-pcl::PointCloud<PointType>::Ptr laserCloudSurfLast(new pcl::PointCloud<PointType>());
+//pcl::PointCloud<PointType>::Ptr laserCloudSurfLast(new pcl::PointCloud<PointType>());
 
 // ouput: all visualble cube points
 pcl::PointCloud<PointType>::Ptr laserCloudSurround(new pcl::PointCloud<PointType>());
 
 // surround points in map to build tree
 pcl::PointCloud<PointType>::Ptr laserCloudCornerFromMap(new pcl::PointCloud<PointType>());
-pcl::PointCloud<PointType>::Ptr laserCloudSurfFromMap(new pcl::PointCloud<PointType>());
+//pcl::PointCloud<PointType>::Ptr laserCloudSurfFromMap(new pcl::PointCloud<PointType>());
 
 //input & output: points in one frame. local --> global
 //pcl::PointCloud<PointType>::Ptr laserCloudFullRes(new pcl::PointCloud<PointType>());
@@ -106,7 +106,7 @@ pcl::PointCloud<PointType>::Ptr laserCloudSurfArray[laserCloudNum];
 
 //kd-tree
 pcl::KdTreeFLANN<PointType>::Ptr kdtreeCornerFromMap(new pcl::KdTreeFLANN<PointType>());
-pcl::KdTreeFLANN<PointType>::Ptr kdtreeSurfFromMap(new pcl::KdTreeFLANN<PointType>());
+//pcl::KdTreeFLANN<PointType>::Ptr kdtreeSurfFromMap(new pcl::KdTreeFLANN<PointType>());
 
 // 点云特征匹配时的优化变量
 double parameters[7] = {0, 0, 0, 1, 0, 0, 0};
@@ -130,7 +130,7 @@ Eigen::Vector3d t_wodom_curr(0, 0, 0);
 
 
 std::queue<sensor_msgs::PointCloud2ConstPtr> cornerLastBuf;
-std::queue<sensor_msgs::PointCloud2ConstPtr> surfLastBuf;
+//std::queue<sensor_msgs::PointCloud2ConstPtr> surfLastBuf;
 //std::queue<sensor_msgs::PointCloud2ConstPtr> fullResBuf;
 std::queue<nav_msgs::Odometry::ConstPtr> odometryBuf;
 std::mutex mBuf;
@@ -195,15 +195,69 @@ void laserCloudCornerLastHandler(const sensor_msgs::PointCloud2ConstPtr &laserCl
 }
 
 std::vector<size_t> surf_extract_num;
-std::vector<size_t> surf_downsample_num;
-std::vector<size_t> surf_from_map_num;
+std::vector<int> surf_downsample_num;
+std::vector<int> surf_from_map_num;
 
-void laserCloudSurfLastHandler(const sensor_msgs::PointCloud2ConstPtr &laserCloudSurfLast2)
+std::vector<size_t> corner_extract_num;
+std::vector<int> corner_downsample_num;
+std::vector<int> corner_from_map_num;
+
+void printCornerNum()
 {
-	mBuf.lock();
-	surfLastBuf.push(laserCloudSurfLast2);
-	mBuf.unlock();
+    {
+        float corner_extract_num_aveg = 0;
+        for (const size_t &a: corner_extract_num) {
+            corner_extract_num_aveg += static_cast<float>(a) / static_cast<float>(corner_extract_num.size());
+        }
+        printf("\033[1;32mlaserMapping corner_extract_num_aveg: %f\033[0m\n", corner_extract_num_aveg);
+    }
+    {
+        float corner_downsample_num_aveg = 0;
+        for (const int &a: corner_downsample_num) {
+            corner_downsample_num_aveg += static_cast<float>(a) / static_cast<float>(corner_downsample_num.size());
+        }
+        printf("\033[1;32mlaserMapping corner_downsample_num_aveg: %f\033[0m\n", corner_downsample_num_aveg);
+    }
+    {
+        float corner_from_map_num_aveg = 0;
+        for (const int &a: corner_from_map_num) {
+            corner_from_map_num_aveg += static_cast<float>(a) / static_cast<float>(corner_from_map_num.size());
+        }
+        printf("\033[1;32mlaserMapping corner_from_map_num_aveg: %f\033[0m\n", corner_from_map_num_aveg);
+    }
 }
+
+void printSurfaceNum()
+{
+    {
+        float surf_extract_num_aveg = 0;
+        for (const size_t &a: surf_extract_num) {
+            surf_extract_num_aveg += static_cast<float>(a) / static_cast<float>(surf_extract_num.size());
+        }
+        printf("\033[1;32mlaserMapping surf_extract_num_aveg: %f\033[0m\n", surf_extract_num_aveg);
+    }
+    {
+        float surf_downsample_num_aveg = 0;
+        for (const size_t &a: surf_downsample_num) {
+            surf_downsample_num_aveg += static_cast<float>(a) / static_cast<float>(surf_downsample_num.size());
+        }
+        printf("\033[1;32mlaserMapping surf_downsample_num_aveg: %f\033[0m\n", surf_downsample_num_aveg);
+    }
+    {
+        float surf_from_map_num_aveg = 0;
+        for (const size_t &a: surf_from_map_num) {
+            surf_from_map_num_aveg += static_cast<float>(a) / static_cast<float>(surf_from_map_num.size());
+        }
+        printf("\033[1;32mlaserMapping surf_from_map_num_aveg: %f\033[0m\n", surf_from_map_num_aveg);
+    }
+}
+
+//void laserCloudSurfLastHandler(const sensor_msgs::PointCloud2ConstPtr &laserCloudSurfLast2)
+//{
+//	mBuf.lock();
+//	surfLastBuf.push(laserCloudSurfLast2);
+//	mBuf.unlock();
+//}
 
 //void laserCloudFullResHandler(const sensor_msgs::PointCloud2ConstPtr &laserCloudFullRes2)
 //{
@@ -282,7 +336,7 @@ void process()
 		// 因为Mapping线程耗时>100ms导致的历史缓存都会被clear
 //		while (!cornerLastBuf.empty() && !surfLastBuf.empty() &&
 //			!fullResBuf.empty() && !odometryBuf.empty())
-        while (!cornerLastBuf.empty() && !surfLastBuf.empty() && !odometryBuf.empty())
+        while (!cornerLastBuf.empty() && !odometryBuf.empty())
 		{
             mBuf.lock();
 			// odometryBuf只保留一个与cornerLastBuf.front()时间同步的最新消息
@@ -294,14 +348,14 @@ void process()
 				break;
 			}
 
-			// surfLastBuf也如此
-			while (!surfLastBuf.empty() && surfLastBuf.front()->header.stamp.toSec() < cornerLastBuf.front()->header.stamp.toSec())
-				surfLastBuf.pop();
-			if (surfLastBuf.empty())
-			{
-				mBuf.unlock();
-				break;
-			}
+//			// surfLastBuf也如此
+//			while (!surfLastBuf.empty() && surfLastBuf.front()->header.stamp.toSec() < cornerLastBuf.front()->header.stamp.toSec())
+//				surfLastBuf.pop();
+//			if (surfLastBuf.empty())
+//			{
+//				mBuf.unlock();
+//				break;
+//			}
 
 			// fullResBuf也如此
 //			while (!fullResBuf.empty() && fullResBuf.front()->header.stamp.toSec() < cornerLastBuf.front()->header.stamp.toSec())
@@ -314,15 +368,14 @@ void process()
 //			}
 
 			timeLaserCloudCornerLast = cornerLastBuf.front()->header.stamp.toSec();
-			timeLaserCloudSurfLast = surfLastBuf.front()->header.stamp.toSec();
+//			timeLaserCloudSurfLast = surfLastBuf.front()->header.stamp.toSec();
 //			timeLaserCloudFullRes = fullResBuf.front()->header.stamp.toSec();
 			timeLaserOdometry = odometryBuf.front()->header.stamp.toSec();
 
 //			if (timeLaserCloudCornerLast != timeLaserOdometry ||
 //				timeLaserCloudSurfLast != timeLaserOdometry ||
 //				timeLaserCloudFullRes != timeLaserOdometry)
-            if (timeLaserCloudSurfLast != timeLaserOdometry ||
-                timeLaserCloudCornerLast != timeLaserOdometry)
+            if (timeLaserCloudCornerLast != timeLaserOdometry)
 			{
 				printf("time surf %f full %f odom %f \n",  timeLaserCloudSurfLast, timeLaserCloudFullRes, timeLaserOdometry);
 				printf("unsync messeage!");
@@ -336,14 +389,15 @@ void process()
             if(laserCloudCornerLast->size() == 0)
                 ROS_BREAK();
             cornerLastBuf.pop();
+            corner_extract_num.push_back(laserCloudCornerLast->size());
 
-			laserCloudSurfLast->clear();
-			pcl::fromROSMsg(*surfLastBuf.front(), *laserCloudSurfLast);
-            ROS_INFO("laserCloudSurfLast->size() = %d", laserCloudSurfLast->size());
-            if(laserCloudSurfLast->size() == 0)
-                ROS_BREAK();
-			surfLastBuf.pop();
-            surf_extract_num.push_back(laserCloudSurfLast->size());
+//			laserCloudSurfLast->clear();
+//			pcl::fromROSMsg(*surfLastBuf.front(), *laserCloudSurfLast);
+//            ROS_INFO("laserCloudSurfLast->size() = %d", laserCloudSurfLast->size());
+//            if(laserCloudSurfLast->size() == 0)
+//                ROS_BREAK();
+//			surfLastBuf.pop();
+//            surf_extract_num.push_back(laserCloudSurfLast->size());
 
 
 //			laserCloudFullRes->clear();
@@ -610,41 +664,44 @@ void process()
 			}
 
 			laserCloudCornerFromMap->clear();
-			laserCloudSurfFromMap->clear();
+//			laserCloudSurfFromMap->clear();
 			for (int i = 0; i < laserCloudValidNum; i++)
 			{
 				// 将有效index的cube中的点云叠加到一起组成submap的特征点云
 				*laserCloudCornerFromMap += *laserCloudCornerArray[laserCloudValidInd[i]];
-				*laserCloudSurfFromMap += *laserCloudSurfArray[laserCloudValidInd[i]];
+//				*laserCloudSurfFromMap += *laserCloudSurfArray[laserCloudValidInd[i]];
 			}
 			int laserCloudCornerFromMapNum = laserCloudCornerFromMap->points.size();
-			int laserCloudSurfFromMapNum = laserCloudSurfFromMap->points.size();
-            // 记录地图平面特征点数
-            surf_from_map_num.push_back(laserCloudSurfFromMapNum);
+//			int laserCloudSurfFromMapNum = laserCloudSurfFromMap->points.size();
+            // 记录地图特征点数
+//            surf_from_map_num.push_back(laserCloudSurfFromMapNum);
+            corner_from_map_num.push_back(laserCloudCornerFromMapNum);
 
-			pcl::PointCloud<PointType>::Ptr laserCloudCornerStack(new pcl::PointCloud<PointType>());//最新降采样后点云
+            //最新线特征点云降采样
+			pcl::PointCloud<PointType>::Ptr laserCloudCornerStack(new pcl::PointCloud<PointType>());
 			downSizeFilterCorner.setInputCloud(laserCloudCornerLast);
 			downSizeFilterCorner.filter(*laserCloudCornerStack);
 			int laserCloudCornerStackNum = laserCloudCornerStack->points.size();
+            corner_downsample_num.push_back(laserCloudCornerStackNum);
 
-            //对当前帧平面点降采样
-			pcl::PointCloud<PointType>::Ptr laserCloudSurfStack(new pcl::PointCloud<PointType>());
-			downSizeFilterSurf.setInputCloud(laserCloudSurfLast);
-			downSizeFilterSurf.filter(*laserCloudSurfStack);
-			int laserCloudSurfStackNum = laserCloudSurfStack->points.size();
-            // 记录当前帧用于配准（降采样后）的平面特征点数
-            surf_downsample_num.push_back(laserCloudSurfStackNum);
+//            //对当前帧平面点降采样
+//			pcl::PointCloud<PointType>::Ptr laserCloudSurfStack(new pcl::PointCloud<PointType>());
+//			downSizeFilterSurf.setInputCloud(laserCloudSurfLast);
+//			downSizeFilterSurf.filter(*laserCloudSurfStack);
+//			int laserCloudSurfStackNum = laserCloudSurfStack->points.size();
+//            // 记录当前帧用于配准（降采样后）的平面特征点数
+//            surf_downsample_num.push_back(laserCloudSurfStackNum);
 
 
 			printf("map prepare time %f ms\n", t_shift.toc());
-			printf("map surf num %d \n", laserCloudSurfFromMapNum);
-			if (laserCloudCornerFromMapNum > 10 && laserCloudSurfFromMapNum > 50)
-//            if (laserCloudSurfFromMapNum > 50)
-			{
+//			printf("map surf num %d \n", laserCloudSurfFromMapNum);
+//			if (laserCloudCornerFromMapNum > 10 && laserCloudSurfFromMapNum > 50)
+            if (laserCloudCornerFromMapNum > 10)
+            {
 				TicToc t_opt;
 				TicToc t_tree;
 				kdtreeCornerFromMap->setInputCloud(laserCloudCornerFromMap);//地图中已有点云
-				kdtreeSurfFromMap->setInputCloud(laserCloudSurfFromMap);
+//				kdtreeSurfFromMap->setInputCloud(laserCloudSurfFromMap);
 				printf("build tree time %f ms \n", t_tree.toc());
 
 				for (int iterCount = 0; iterCount < 2; iterCount++)
@@ -734,73 +791,73 @@ void process()
 						*/
 					}
 
-					int surf_num = 0;
-					for (int i = 0; i < laserCloudSurfStackNum; i++)
-					{
-						pointOri = laserCloudSurfStack->points[i];
-			
-						pointAssociateToMap(&pointOri, &pointSel);
-						kdtreeSurfFromMap->nearestKSearch(pointSel, 5, pointSearchInd, pointSearchSqDis);
-
-						// 求面的法向量就不是用的PCA了（虽然论文中说还是PCA），使用的是最小二乘拟合，是为了提效？不确定
-						// 假设平面不通过原点，则平面的一般方程为Ax + By + Cz + 1 = 0，用这个假设可以少算一个参数，提效。
-						Eigen::Matrix<double, 5, 3> matA0;
-						Eigen::Matrix<double, 5, 1> matB0 = -1 * Eigen::Matrix<double, 5, 1>::Ones();
-						// 用上面的2个矩阵表示平面方程就是 matA0 * norm（A, B, C） = matB0，这是个超定方程组，因为数据个数超过未知数的个数
-						if (pointSearchSqDis[4] < 1.0)
-						{
-							for (int j = 0; j < 5; j++)
-							{
-								matA0(j, 0) = laserCloudSurfFromMap->points[pointSearchInd[j]].x;
-								matA0(j, 1) = laserCloudSurfFromMap->points[pointSearchInd[j]].y;
-								matA0(j, 2) = laserCloudSurfFromMap->points[pointSearchInd[j]].z;
-							}
-							// 求解这个最小二乘问题，可得平面的法向量，find the norm of plane
-							Eigen::Vector3d norm = matA0.colPivHouseholderQr().solve(matB0);
-							// Ax + By + Cz + 1 = 0，全部除以法向量的模长，方程依旧成立，而且使得法向量归一化了
-							double negative_OA_dot_norm = 1 / norm.norm();
-							norm.normalize();
-
-							// Here n(pa, pb, pc) is unit norm of plane
-							bool planeValid = true;
-							for (int j = 0; j < 5; j++)
-							{
-								// 点(x0, y0, z0)到平面Ax + By + Cz + D = 0 的距离公式 = fabs(Ax0 + By0 + Cz0 + D) / sqrt(A^2 + B^2 + C^2)
-								if (fabs(norm(0) * laserCloudSurfFromMap->points[pointSearchInd[j]].x +
-										 norm(1) * laserCloudSurfFromMap->points[pointSearchInd[j]].y +
-										 norm(2) * laserCloudSurfFromMap->points[pointSearchInd[j]].z + negative_OA_dot_norm) > 0.2)
-								{
-									planeValid = false;// 平面没有拟合好，平面“不够平”
-									break;
-								}
-							}
-							Eigen::Vector3d curr_point(pointOri.x, pointOri.y, pointOri.z);
-							if (planeValid)
-							{
-								// 构造点到面的距离残差项，同样的，具体到介绍lidarFactor.cpp时再说明该残差的具体计算方法
-								ceres::CostFunction *cost_function = LidarPlaneNormFactor::Create(curr_point, norm, negative_OA_dot_norm);
-								problem.AddResidualBlock(cost_function, loss_function, parameters, parameters + 4);
-								surf_num++;
-							}
-						}
-						/*
-						else if(pointSearchSqDis[4] < 0.01 * sqrtDis)
-						{
-							Eigen::Vector3d center(0, 0, 0);
-							for (int j = 0; j < 5; j++)
-							{
-								Eigen::Vector3d tmp(laserCloudSurfFromMap->points[pointSearchInd[j]].x,
-													laserCloudSurfFromMap->points[pointSearchInd[j]].y,
-													laserCloudSurfFromMap->points[pointSearchInd[j]].z);
-								center = center + tmp;
-							}
-							center = center / 5.0;	
-							Eigen::Vector3d curr_point(pointOri.x, pointOri.y, pointOri.z);
-							ceres::CostFunction *cost_function = LidarDistanceFactor::Create(curr_point, center);
-							problem.AddResidualBlock(cost_function, loss_function, parameters, parameters + 4);
-						}
-						*/
-					}
+//					int surf_num = 0;
+//					for (int i = 0; i < laserCloudSurfStackNum; i++)
+//					{
+//						pointOri = laserCloudSurfStack->points[i];
+//
+//						pointAssociateToMap(&pointOri, &pointSel);
+//						kdtreeSurfFromMap->nearestKSearch(pointSel, 5, pointSearchInd, pointSearchSqDis);
+//
+//						// 求面的法向量就不是用的PCA了（虽然论文中说还是PCA），使用的是最小二乘拟合，是为了提效？不确定
+//						// 假设平面不通过原点，则平面的一般方程为Ax + By + Cz + 1 = 0，用这个假设可以少算一个参数，提效。
+//						Eigen::Matrix<double, 5, 3> matA0;
+//						Eigen::Matrix<double, 5, 1> matB0 = -1 * Eigen::Matrix<double, 5, 1>::Ones();
+//						// 用上面的2个矩阵表示平面方程就是 matA0 * norm（A, B, C） = matB0，这是个超定方程组，因为数据个数超过未知数的个数
+//						if (pointSearchSqDis[4] < 1.0)
+//						{
+//							for (int j = 0; j < 5; j++)
+//							{
+//								matA0(j, 0) = laserCloudSurfFromMap->points[pointSearchInd[j]].x;
+//								matA0(j, 1) = laserCloudSurfFromMap->points[pointSearchInd[j]].y;
+//								matA0(j, 2) = laserCloudSurfFromMap->points[pointSearchInd[j]].z;
+//							}
+//							// 求解这个最小二乘问题，可得平面的法向量，find the norm of plane
+//							Eigen::Vector3d norm = matA0.colPivHouseholderQr().solve(matB0);
+//							// Ax + By + Cz + 1 = 0，全部除以法向量的模长，方程依旧成立，而且使得法向量归一化了
+//							double negative_OA_dot_norm = 1 / norm.norm();
+//							norm.normalize();
+//
+//							// Here n(pa, pb, pc) is unit norm of plane
+//							bool planeValid = true;
+//							for (int j = 0; j < 5; j++)
+//							{
+//								// 点(x0, y0, z0)到平面Ax + By + Cz + D = 0 的距离公式 = fabs(Ax0 + By0 + Cz0 + D) / sqrt(A^2 + B^2 + C^2)
+//								if (fabs(norm(0) * laserCloudSurfFromMap->points[pointSearchInd[j]].x +
+//										 norm(1) * laserCloudSurfFromMap->points[pointSearchInd[j]].y +
+//										 norm(2) * laserCloudSurfFromMap->points[pointSearchInd[j]].z + negative_OA_dot_norm) > 0.2)
+//								{
+//									planeValid = false;// 平面没有拟合好，平面“不够平”
+//									break;
+//								}
+//							}
+//							Eigen::Vector3d curr_point(pointOri.x, pointOri.y, pointOri.z);
+//							if (planeValid)
+//							{
+//								// 构造点到面的距离残差项，同样的，具体到介绍lidarFactor.cpp时再说明该残差的具体计算方法
+//								ceres::CostFunction *cost_function = LidarPlaneNormFactor::Create(curr_point, norm, negative_OA_dot_norm);
+//								problem.AddResidualBlock(cost_function, loss_function, parameters, parameters + 4);
+//								surf_num++;
+//							}
+//						}
+//						/*
+//						else if(pointSearchSqDis[4] < 0.01 * sqrtDis)
+//						{
+//							Eigen::Vector3d center(0, 0, 0);
+//							for (int j = 0; j < 5; j++)
+//							{
+//								Eigen::Vector3d tmp(laserCloudSurfFromMap->points[pointSearchInd[j]].x,
+//													laserCloudSurfFromMap->points[pointSearchInd[j]].y,
+//													laserCloudSurfFromMap->points[pointSearchInd[j]].z);
+//								center = center + tmp;
+//							}
+//							center = center / 5.0;
+//							Eigen::Vector3d curr_point(pointOri.x, pointOri.y, pointOri.z);
+//							ceres::CostFunction *cost_function = LidarDistanceFactor::Create(curr_point, center);
+//							problem.AddResidualBlock(cost_function, loss_function, parameters, parameters + 4);
+//						}
+//						*/
+//					}
 
 					//printf("corner num %d used corner num %d \n", laserCloudCornerStackNum, corner_num);
 					//printf("surf num %d used surf num %d \n", laserCloudSurfStackNum, surf_num);
@@ -862,30 +919,30 @@ void process()
 				}
 			}
 
-            //新的平面特征点加入地图
-			for (int i = 0; i < laserCloudSurfStackNum; i++)
-			{
-				pointAssociateToMap(&laserCloudSurfStack->points[i], &pointSel);
-
-				int cubeI = int((pointSel.x + 25.0) / 50.0) + laserCloudCenWidth;
-				int cubeJ = int((pointSel.y + 25.0) / 50.0) + laserCloudCenHeight;
-				int cubeK = int((pointSel.z + 25.0) / 50.0) + laserCloudCenDepth;
-
-				if (pointSel.x + 25.0 < 0)
-					cubeI--;
-				if (pointSel.y + 25.0 < 0)
-					cubeJ--;
-				if (pointSel.z + 25.0 < 0)
-					cubeK--;
-
-				if (cubeI >= 0 && cubeI < laserCloudWidth &&
-					cubeJ >= 0 && cubeJ < laserCloudHeight &&
-					cubeK >= 0 && cubeK < laserCloudDepth)
-				{
-					int cubeInd = cubeI + laserCloudWidth * cubeJ + laserCloudWidth * laserCloudHeight * cubeK;
-					laserCloudSurfArray[cubeInd]->push_back(pointSel);
-				}
-			}
+//            //新的平面特征点加入地图
+//			for (int i = 0; i < laserCloudSurfStackNum; i++)
+//			{
+//				pointAssociateToMap(&laserCloudSurfStack->points[i], &pointSel);
+//
+//				int cubeI = int((pointSel.x + 25.0) / 50.0) + laserCloudCenWidth;
+//				int cubeJ = int((pointSel.y + 25.0) / 50.0) + laserCloudCenHeight;
+//				int cubeK = int((pointSel.z + 25.0) / 50.0) + laserCloudCenDepth;
+//
+//				if (pointSel.x + 25.0 < 0)
+//					cubeI--;
+//				if (pointSel.y + 25.0 < 0)
+//					cubeJ--;
+//				if (pointSel.z + 25.0 < 0)
+//					cubeK--;
+//
+//				if (cubeI >= 0 && cubeI < laserCloudWidth &&
+//					cubeJ >= 0 && cubeJ < laserCloudHeight &&
+//					cubeK >= 0 && cubeK < laserCloudDepth)
+//				{
+//					int cubeInd = cubeI + laserCloudWidth * cubeJ + laserCloudWidth * laserCloudHeight * cubeK;
+//					laserCloudSurfArray[cubeInd]->push_back(pointSel);
+//				}
+//			}
 			printf("add points time %f ms\n", t_add.toc());
 
 			
@@ -1009,7 +1066,7 @@ int main(int argc, char **argv)
 
 	float lineRes = 0;
 	float planeRes = 0;
-	nh.param<float>("mapping_line_resolution", lineRes, 0.4);
+	nh.param<float>("mapping_line_resolution", lineRes, 0.2);
 	nh.param<float>("mapping_plane_resolution", planeRes, 0.8);
     nh.param<std::string>("output_odom_file",odom_file,"/tmp/laser_odom.txt");
     nh.param<std::string>("output_map_file",map_file,"/tmp/map.pcd");
@@ -1027,11 +1084,11 @@ int main(int argc, char **argv)
     }
     laser_odom_ofs_.close();
 
-	ros::Subscriber subLaserCloudCornerLast = nh.subscribe<sensor_msgs::PointCloud2>("/laser_cloud_corner_last", 100, laserCloudCornerLastHandler);
+	ros::Subscriber subLaserCloudCornerLast = nh.subscribe<sensor_msgs::PointCloud2>("/laser_cloud_corner_last", 500, laserCloudCornerLastHandler);
 
-	ros::Subscriber subLaserCloudSurfLast = nh.subscribe<sensor_msgs::PointCloud2>("/laser_cloud_surf_last", 100, laserCloudSurfLastHandler);
+//	ros::Subscriber subLaserCloudSurfLast = nh.subscribe<sensor_msgs::PointCloud2>("/laser_cloud_surf_last", 100, laserCloudSurfLastHandler);
 
-	ros::Subscriber subLaserOdometry = nh.subscribe<nav_msgs::Odometry>("/laser_odom_to_init", 100, laserOdometryHandler);
+	ros::Subscriber subLaserOdometry = nh.subscribe<nav_msgs::Odometry>("/laser_odom_to_init", 500, laserOdometryHandler);
 
 //	ros::Subscriber subLaserCloudFullRes = nh.subscribe<sensor_msgs::PointCloud2>("/velodyne_cloud_3", 100, laserCloudFullResHandler);
 
@@ -1057,27 +1114,8 @@ int main(int argc, char **argv)
 
 	ros::spin();
 
-    {
-        float surf_extract_num_aveg = 0;
-        for (const size_t &a: surf_extract_num) {
-            surf_extract_num_aveg += static_cast<float>(a) / static_cast<float>(surf_extract_num.size());
-        }
-        printf("\033[1;32mlaserMapping surf_extract_num_aveg: %f\033[0m\n", surf_extract_num_aveg);
-    }
-    {
-        float surf_downsample_num_aveg = 0;
-        for (const size_t &a: surf_downsample_num) {
-            surf_downsample_num_aveg += static_cast<float>(a) / static_cast<float>(surf_downsample_num.size());
-        }
-        printf("\033[1;32mlaserMapping surf_downsample_num_aveg: %f\033[0m\n", surf_downsample_num_aveg);
-    }
-    {
-        float surf_from_map_num_aveg = 0;
-        for (const size_t &a: surf_from_map_num) {
-            surf_from_map_num_aveg += static_cast<float>(a) / static_cast<float>(surf_from_map_num.size());
-        }
-        printf("\033[1;32mlaserMapping surf_from_map_num_aveg: %f\033[0m\n", surf_from_map_num_aveg);
-    }
+//    printSurfaceNum();
+    printCornerNum();
 
     if(save_map != 0)
     {
