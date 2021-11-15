@@ -849,24 +849,25 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr &laserCloudMsg)
     //////////
     PointCloudXYZI::Ptr  ptr(new PointCloudXYZI());
     p_pre->process(laserCloudMsg, ptr);
-//    ROS_INFO("ptr.size(): %d", ptr->size());
+    int num_pts = static_cast<int>(ptr->size());
+    ROS_INFO("ptr.size(): %d", num_pts);
 
-    plane_feature_size.emplace_back(ptr->size());
+    plane_feature_size.emplace_back(num_pts);
 //    int plane_feature_aveg = 0;
 //    for (const size_t& a : plane_feature_size) {
 //        plane_feature_aveg += a / plane_feature_size.size();
 //    }
 //    ROS_INFO("\033[1;32m plane_feature_aveg: %d\033[0m", plane_feature_aveg);
 
-    surfPointsLessFlat.resize(ptr->size());
-    for (int i = 0; i < ptr->size(); ++i) {
+    surfPointsLessFlat.resize(num_pts);
+    for (int i = 0; i < num_pts; ++i) {
         surfPointsLessFlat.points[i].x = ptr->points[i].x;
         surfPointsLessFlat.points[i].y = ptr->points[i].y;
         surfPointsLessFlat.points[i].z = ptr->points[i].z;
         surfPointsLessFlat.points[i].intensity = ptr->points[i].intensity;
     }
-    surfPointsFlat.resize(ptr->size());
-    for (int i = 0; i < ptr->size(); ++i) {
+    surfPointsFlat.resize(num_pts);
+    for (int i = 0; i < num_pts; ++i) {
         surfPointsFlat.points[i].x = ptr->points[i].x;
         surfPointsFlat.points[i].y = ptr->points[i].y;
         surfPointsFlat.points[i].z = ptr->points[i].z;
@@ -1095,7 +1096,7 @@ int main(int argc, char **argv)
     ros::NodeHandle nh;
     std::string topic_cloud_in;
     nh.param<std::string>("topic_cloud_in",topic_cloud_in,"/velodyne_points");
-    nh.param<double>("preprocess/blind", p_pre->blind, 4);
+    nh.param<double>("preprocess/blind", p_pre->blind, 2.0);
     nh.param<int>("preprocess/lidar_type", p_pre->lidar_type, 2);
     nh.param<int>("preprocess/scan_line", p_pre->N_SCANS, 32);
     nh.param<int>("preprocess/scan_rate", p_pre->SCAN_RATE, 10);
