@@ -195,8 +195,62 @@ void laserCloudCornerLastHandler(const sensor_msgs::PointCloud2ConstPtr &laserCl
 }
 
 std::vector<size_t> surf_extract_num;
-std::vector<size_t> surf_downsample_num;
-std::vector<size_t> surf_from_map_num;
+std::vector<int> surf_downsample_num;
+std::vector<int> surf_from_map_num;
+
+std::vector<size_t> corner_extract_num;
+std::vector<int> corner_downsample_num;
+std::vector<int> corner_from_map_num;
+
+void printCornerNum()
+{
+    {
+        float corner_extract_num_aveg = 0;
+        for (const size_t &a: corner_extract_num) {
+            corner_extract_num_aveg += static_cast<float>(a) / static_cast<float>(corner_extract_num.size());
+        }
+        printf("\033[1;32mlaserMapping corner_extract_num_aveg: %f\033[0m\n", corner_extract_num_aveg);
+    }
+    {
+        float corner_downsample_num_aveg = 0;
+        for (const int &a: corner_downsample_num) {
+            corner_downsample_num_aveg += static_cast<float>(a) / static_cast<float>(corner_downsample_num.size());
+        }
+        printf("\033[1;32mlaserMapping corner_downsample_num_aveg: %f\033[0m\n", corner_downsample_num_aveg);
+    }
+    {
+        float corner_from_map_num_aveg = 0;
+        for (const int &a: corner_from_map_num) {
+            corner_from_map_num_aveg += static_cast<float>(a) / static_cast<float>(corner_from_map_num.size());
+        }
+        printf("\033[1;32mlaserMapping corner_from_map_num_aveg: %f\033[0m\n", corner_from_map_num_aveg);
+    }
+}
+
+void printSurfaceNum()
+{
+    {
+        float surf_extract_num_aveg = 0;
+        for (const size_t &a: surf_extract_num) {
+            surf_extract_num_aveg += static_cast<float>(a) / static_cast<float>(surf_extract_num.size());
+        }
+        printf("\033[1;32mlaserMapping surf_extract_num_aveg: %f\033[0m\n", surf_extract_num_aveg);
+    }
+    {
+        float surf_downsample_num_aveg = 0;
+        for (const size_t &a: surf_downsample_num) {
+            surf_downsample_num_aveg += static_cast<float>(a) / static_cast<float>(surf_downsample_num.size());
+        }
+        printf("\033[1;32mlaserMapping surf_downsample_num_aveg: %f\033[0m\n", surf_downsample_num_aveg);
+    }
+    {
+        float surf_from_map_num_aveg = 0;
+        for (const size_t &a: surf_from_map_num) {
+            surf_from_map_num_aveg += static_cast<float>(a) / static_cast<float>(surf_from_map_num.size());
+        }
+        printf("\033[1;32mlaserMapping surf_from_map_num_aveg: %f\033[0m\n", surf_from_map_num_aveg);
+    }
+}
 
 void laserCloudSurfLastHandler(const sensor_msgs::PointCloud2ConstPtr &laserCloudSurfLast2)
 {
@@ -336,6 +390,7 @@ void process()
             if(laserCloudCornerLast->size() == 0)
                 ROS_BREAK();
             cornerLastBuf.pop();
+            corner_extract_num.push_back(laserCloudCornerLast->size());
 
 			laserCloudSurfLast->clear();
 			pcl::fromROSMsg(*surfLastBuf.front(), *laserCloudSurfLast);
@@ -621,11 +676,14 @@ void process()
 			int laserCloudSurfFromMapNum = laserCloudSurfFromMap->points.size();
             // 记录地图平面特征点数
             surf_from_map_num.push_back(laserCloudSurfFromMapNum);
+            corner_from_map_num.push_back(laserCloudCornerFromMapNum);
 
-			pcl::PointCloud<PointType>::Ptr laserCloudCornerStack(new pcl::PointCloud<PointType>());//最新降采样后点云
+            //最新线特征点云降采样
+			pcl::PointCloud<PointType>::Ptr laserCloudCornerStack(new pcl::PointCloud<PointType>());
 			downSizeFilterCorner.setInputCloud(laserCloudCornerLast);
 			downSizeFilterCorner.filter(*laserCloudCornerStack);
 			int laserCloudCornerStackNum = laserCloudCornerStack->points.size();
+            corner_downsample_num.push_back(laserCloudCornerStackNum);
 
             //对当前帧平面点降采样
 			pcl::PointCloud<PointType>::Ptr laserCloudSurfStack(new pcl::PointCloud<PointType>());
@@ -1057,27 +1115,8 @@ int main(int argc, char **argv)
 
 	ros::spin();
 
-    {
-        float surf_extract_num_aveg = 0;
-        for (const size_t &a: surf_extract_num) {
-            surf_extract_num_aveg += static_cast<float>(a) / static_cast<float>(surf_extract_num.size());
-        }
-        printf("\033[1;32mlaserMapping surf_extract_num_aveg: %f\033[0m\n", surf_extract_num_aveg);
-    }
-    {
-        float surf_downsample_num_aveg = 0;
-        for (const size_t &a: surf_downsample_num) {
-            surf_downsample_num_aveg += static_cast<float>(a) / static_cast<float>(surf_downsample_num.size());
-        }
-        printf("\033[1;32mlaserMapping surf_downsample_num_aveg: %f\033[0m\n", surf_downsample_num_aveg);
-    }
-    {
-        float surf_from_map_num_aveg = 0;
-        for (const size_t &a: surf_from_map_num) {
-            surf_from_map_num_aveg += static_cast<float>(a) / static_cast<float>(surf_from_map_num.size());
-        }
-        printf("\033[1;32mlaserMapping surf_from_map_num_aveg: %f\033[0m\n", surf_from_map_num_aveg);
-    }
+    printSurfaceNum();
+    printCornerNum();
 
     if(save_map != 0)
     {
