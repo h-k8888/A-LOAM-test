@@ -1057,7 +1057,7 @@ void Preprocess::rs_handler(const sensor_msgs::PointCloud2_<allocator<void>>::Co
     pcl::PointCloud<rslidar_ros::Point> pl_orig;
     pcl::fromROSMsg(*msg, pl_orig);
     int plsize = pl_orig.points.size();
-    ROS_INFO("RS LIDAR, plsize = %d", plsize);
+//    ROS_INFO("RS LIDAR, plsize = %d", plsize);
 //    if(plsize == 0)
 //        ROS_BREAK();
 

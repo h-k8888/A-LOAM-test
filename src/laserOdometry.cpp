@@ -282,7 +282,14 @@ int main(int argc, char **argv)
             else
             {
 //                int cornerPointsSharpNum = cornerPointsSharp->points.size();
+
+        pcl::VoxelGrid<PointType> downSizeFilter;
+        downSizeFilter.setInputCloud(surfPointsFlat);
+        downSizeFilter.setLeafSize(0.2, 0.2, 0.2);
+        downSizeFilter.filter(*surfPointsFlat);
                 int surfPointsFlatNum = surfPointsFlat->points.size();
+
+
 
                 TicToc t_opt;
                 for (size_t opti_counter = 0; opti_counter < 2; ++opti_counter)// 点到线以及点到面的ICP，迭代2次
