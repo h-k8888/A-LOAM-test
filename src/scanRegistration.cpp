@@ -852,34 +852,39 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr &laserCloudMsg)
     p_pre->process(laserCloudMsg, surf_ptr, corn_ptr);
 //    ROS_INFO("ptr.size(): %d", ptr->size());
 
-    plane_feature_size.emplace_back(surf_ptr->size());
+    int num_surf_pts = static_cast<int>(surf_ptr->size());
+    ROS_INFO("number surface points: %d", num_surf_pts);
+    int num_corner_pts = static_cast<int>(corn_ptr->size());
 
-    surfPointsLessFlat.resize(surf_ptr->size());
-    for (int i = 0; i < surf_ptr->size(); ++i) {
+
+    plane_feature_size.emplace_back(num_surf_pts);
+
+    surfPointsLessFlat.resize(num_surf_pts);
+    for (int i = 0; i < num_surf_pts; ++i) {
         surfPointsLessFlat.points[i].x = surf_ptr->points[i].x;
         surfPointsLessFlat.points[i].y = surf_ptr->points[i].y;
         surfPointsLessFlat.points[i].z = surf_ptr->points[i].z;
         surfPointsLessFlat.points[i].intensity = surf_ptr->points[i].intensity;
     }
 
-    surfPointsFlat.resize(surf_ptr->size());
-    for (int i = 0; i < surf_ptr->size(); ++i) {
+    surfPointsFlat.resize(num_surf_pts);
+    for (int i = 0; i < num_surf_pts; ++i) {
         surfPointsFlat.points[i].x = surf_ptr->points[i].x;
         surfPointsFlat.points[i].y = surf_ptr->points[i].y;
         surfPointsFlat.points[i].z = surf_ptr->points[i].z;
         surfPointsFlat.points[i].intensity = surf_ptr->points[i].intensity;
     }
 
-    cornerPointsLessSharp.resize(corn_ptr->size());
-    for (int i = 0; i < corn_ptr->size(); ++i) {
+    cornerPointsLessSharp.resize(num_corner_pts);
+    for (int i = 0; i < num_corner_pts; ++i) {
         cornerPointsLessSharp.points[i].x = corn_ptr->points[i].x;
         cornerPointsLessSharp.points[i].y = corn_ptr->points[i].y;
         cornerPointsLessSharp.points[i].z = corn_ptr->points[i].z;
         cornerPointsLessSharp.points[i].intensity = corn_ptr->points[i].intensity;
     }
 
-    cornerPointsSharp.resize(corn_ptr->size());
-    for (int i = 0; i < corn_ptr->size(); ++i) {
+    cornerPointsSharp.resize(num_corner_pts);
+    for (int i = 0; i < num_corner_pts; ++i) {
         cornerPointsSharp.points[i].x = corn_ptr->points[i].x;
         cornerPointsSharp.points[i].y = corn_ptr->points[i].y;
         cornerPointsSharp.points[i].z = corn_ptr->points[i].z;
@@ -1108,7 +1113,7 @@ int main(int argc, char **argv)
     ros::NodeHandle nh;
     std::string topic_cloud_in;
     nh.param<std::string>("topic_cloud_in",topic_cloud_in,"/velodyne_points");
-    nh.param<double>("preprocess/blind", p_pre->blind, 4);
+    nh.param<double>("preprocess/blind", p_pre->blind, 2.0);
     nh.param<int>("preprocess/lidar_type", p_pre->lidar_type, 2);
     nh.param<int>("preprocess/scan_line", p_pre->N_SCANS, 32);
     nh.param<int>("preprocess/scan_rate", p_pre->SCAN_RATE, 10);
