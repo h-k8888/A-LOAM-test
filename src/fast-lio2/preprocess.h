@@ -110,8 +110,9 @@ class Preprocess
   void set(bool feat_en, int lid_type, double bld, int pfilt_num);
 
   // sensor_msgs::PointCloud2::ConstPtr pointcloud;
-  PointCloudXYZI pl_full, pl_corn, pl_surf; //储存全部点(特征提取或间隔采样后）、角点、面特征点
-  PointCloudXYZI pl_buff[128]; //maximum 128 line lidar
+//  PointCloudXYZI pl_full, pl_corn, pl_surf; //储存全部点(特征提取或间隔采样后）、角点、面特征点
+    PointCloudXYZI  pl_surf; //储存全部点(特征提取或间隔采样后）、角点、面特征点
+    PointCloudXYZI pl_buff[128]; //maximum 128 line lidar
   vector<orgtype> typess[128]; //maximum 128 line lidar
   int lidar_type, point_filter_num, N_SCANS, SCAN_RATE;
   double blind; //xy平面距离，小于此阈值不计算特征
