@@ -160,6 +160,7 @@ void transformAssociateToMap()
 // 用在最后，当Mapping的位姿w_curr计算完毕后，更新增量wmap_wodom，旨在为下一次执行transformAssociateToMap函数时做准备
 void transformUpdate()
 {
+    // T(w <-- curr) = T(wmap <-- wodom) * T(wodom <-- curr)
 	q_wmap_wodom = q_w_curr * q_wodom_curr.inverse();
 	t_wmap_wodom = t_w_curr - q_wmap_wodom * t_wodom_curr;
 }

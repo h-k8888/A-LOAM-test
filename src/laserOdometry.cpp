@@ -523,6 +523,7 @@ int main(int argc, char **argv)
                 printf("optimization twice time %f \n", t_opt.toc());
 
                 // 用最新计算出的位姿增量，更新上一帧的位姿，得到当前帧的位姿，注意这里说的位姿都指的是世界坐标系下的位姿
+                // T(w <-- curr) = T(w <-- curr) * T(last <-- curr)
                 t_w_curr = t_w_curr + q_w_curr * t_last_curr;
                 q_w_curr = q_w_curr * q_last_curr;
             }
