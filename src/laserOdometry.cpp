@@ -56,7 +56,7 @@
 #include "aloam_velodyne/tic_toc.h"
 #include "lidarFactor.hpp"
 
-#define DISTORTION 0
+#define DISTORTION 1
 
 
 //int corner_correspondence = 0, plane_correspondence = 0;
@@ -555,7 +555,7 @@ int main(int argc, char **argv)
             pubLaserPath.publish(laserPath);
 
             // transform corner features and plane features to the scan end point
-            if (0)
+            if (1)
             {
 //                int cornerPointsLessSharpNum = cornerPointsLessSharp->points.size();
 //                for (int i = 0; i < cornerPointsLessSharpNum; i++)
@@ -569,11 +569,11 @@ int main(int argc, char **argv)
                     TransformToEnd(&surfPointsLessFlat->points[i], &surfPointsLessFlat->points[i]);
                 }
 
-                int laserCloudFullResNum = laserCloudFullRes->points.size();
-                for (int i = 0; i < laserCloudFullResNum; i++)
-                {
-                    TransformToEnd(&laserCloudFullRes->points[i], &laserCloudFullRes->points[i]);
-                }
+//                int laserCloudFullResNum = laserCloudFullRes->points.size();
+//                for (int i = 0; i < laserCloudFullResNum; i++)
+//                {
+//                    TransformToEnd(&laserCloudFullRes->points[i], &laserCloudFullRes->points[i]);
+//                }
             }
 
 //            pcl::PointCloud<PointType>::Ptr laserCloudTemp = cornerPointsLessSharp;
