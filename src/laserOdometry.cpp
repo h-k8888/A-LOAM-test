@@ -283,10 +283,10 @@ int main(int argc, char **argv)
             {
 //                int cornerPointsSharpNum = cornerPointsSharp->points.size();
 
-        pcl::VoxelGrid<PointType> downSizeFilter;
-        downSizeFilter.setInputCloud(surfPointsFlat);
-        downSizeFilter.setLeafSize(0.2, 0.2, 0.2);
-        downSizeFilter.filter(*surfPointsFlat);
+//        pcl::VoxelGrid<PointType> downSizeFilter;
+//        downSizeFilter.setInputCloud(surfPointsFlat);
+//        downSizeFilter.setLeafSize(0.2, 0.2, 0.2);
+//        downSizeFilter.filter(*surfPointsFlat);
                 int surfPointsFlatNum = surfPointsFlat->points.size();
 
 
