@@ -56,7 +56,7 @@
 #include "aloam_velodyne/tic_toc.h"
 #include "lidarFactor.hpp"
 
-#define DISTORTION 0
+#define DISTORTION 1
 
 
 int corner_correspondence = 0, plane_correspondence = 0;
@@ -116,11 +116,10 @@ std::vector<size_t> sharp_feature_size;
 void TransformToStart(PointType const *const pi, PointType *const po)
 {
     //interpolation ratio
-    double s;
+    double s = 1.0;
     if (DISTORTION)
         s = (pi->intensity - int(pi->intensity)) / SCAN_PERIOD;
-    else
-        s = 1.0;
+
     //s = 1;
     Eigen::Quaterniond q_point_last = Eigen::Quaterniond::Identity().slerp(s, q_last_curr);
     Eigen::Vector3d t_point_last = s * t_last_curr;
@@ -387,11 +386,10 @@ int main(int argc, char **argv)
                                                          laserCloudCornerLast->points[minPointInd2].y,
                                                          laserCloudCornerLast->points[minPointInd2].z);
 
-                            double s;// 运动补偿系数，kitti数据集的点云已经被补偿过，所以s = 1.0
+                            double s = 1.0;// 运动补偿系数，kitti数据集的点云已经被补偿过，所以s = 1.0
                             if (DISTORTION)
                                 s = (cornerPointsSharp->points[i].intensity - int(cornerPointsSharp->points[i].intensity)) / SCAN_PERIOD;
-                            else
-                                s = 1.0;
+
                             // 用点O，A，B构造点到线的距离的残差项，注意这三个点都是在上一帧的Lidar坐标系下，即，残差 = 点O到直线AB的距离
                             // 具体到介绍lidarFactor.cpp时再说明该残差的具体计算方法
                             ceres::CostFunction *cost_function = LidarEdgeFactor::Create(curr_point, last_point_a, last_point_b, s);
@@ -552,7 +550,7 @@ int main(int argc, char **argv)
             pubLaserPath.publish(laserPath);
 
             // transform corner features and plane features to the scan end point
-            if (0)
+            if (1)
             {
                 int cornerPointsLessSharpNum = cornerPointsLessSharp->points.size();
                 for (int i = 0; i < cornerPointsLessSharpNum; i++)

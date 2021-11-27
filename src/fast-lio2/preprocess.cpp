@@ -958,7 +958,7 @@ void Preprocess::rs_handler(const sensor_msgs::PointCloud2_<allocator<void>>::Co
     pl_surf.reserve(plsize);
 
     /*** These variables only works when no point timestamps given ***/
-    double omega_l = 0.361 * SCAN_RATE;       // scan angular velocity
+    double omega_l = 0.361 * SCAN_RATE;       // scan angular velocity. unit:: degree / ms
     std::vector<bool> is_first(N_SCANS,true);
     std::vector<double> yaw_fp(N_SCANS, 0.0);      // yaw of first scan point
     std::vector<float> yaw_last(N_SCANS, 0.0);   // yaw of last scan point
@@ -1007,21 +1007,19 @@ void Preprocess::rs_handler(const sensor_msgs::PointCloud2_<allocator<void>>::Co
             added_pt.x = pl_orig.points[i].x;
             added_pt.y = pl_orig.points[i].y;
             added_pt.z = pl_orig.points[i].z;
-//        added_pt.intensity = pl_orig.points[i].intensity;
-//        added_pt.curvature = pl_orig.points[i].time / 1000.0; // units: ms
-            added_pt.curvature = pl_orig.points[i].time; // units: ms
+            added_pt.intensity = layer;
 
+            added_pt.curvature = pl_orig.points[i].time / 1000.0; // units: ms
 //          ROS_INFO("pl_orig.points[i].time: %f", added_pt.curvature);
 
             //记录当前帧的时间最大最小值用于计算单点时间比例
             time_min = min(time_min, added_pt.curvature);
             time_max = max(time_max, added_pt.curvature);
-//        added_pt.curvature = layer + pl_orig.points[i].time / 1000000000.0 ; // units: ms
 //          ROS_INFO("ring: %d curvature: %f", layer, added_pt.curvature);
 
             if (!given_offset_time)
             {
-                double yaw_angle = atan2(added_pt.y, added_pt.x) * 57.2957;
+                double yaw_angle = atan2(added_pt.y, added_pt.x) * 57.2957; //unit:: degree, 57.2957 = 180 / pi
                 if (is_first[layer])
                 {
                     // printf("layer: %d; is first: %d", layer, is_first[layer]);
@@ -1035,7 +1033,7 @@ void Preprocess::rs_handler(const sensor_msgs::PointCloud2_<allocator<void>>::Co
 
                 if (yaw_angle <= yaw_fp[layer])
                 {
-                    added_pt.curvature = (yaw_fp[layer]-yaw_angle) / omega_l;
+                    added_pt.curvature = (yaw_fp[layer]-yaw_angle) / omega_l; // ms
                 }
                 else
                 {
@@ -1048,7 +1046,7 @@ void Preprocess::rs_handler(const sensor_msgs::PointCloud2_<allocator<void>>::Co
                 time_last[layer]=added_pt.curvature;
             }
 
-            added_pt.curvature = layer + pl_orig.points[i].time / 1e6 ; // units: s
+//            added_pt.curvature = layer + pl_orig.points[i].time / 1e6 ; // units: s
 //        ROS_INFO("ring: %d curvature: %f", layer, added_pt.curvature);
             pl_buff[layer].points.push_back(added_pt);
         }
@@ -1061,10 +1059,10 @@ void Preprocess::rs_handler(const sensor_msgs::PointCloud2_<allocator<void>>::Co
             if (linesize < 2) continue;
             for (uint i = 0; i < linesize; i++)
             {
-                float t =  (pl[i].curvature - (int)pl[i].curvature) * 1e3;
-                float relTime = (t - time_min) / (time_max - time_min);//点在点云中的相对时间
+//                float t =  (pl[i].curvature - (int)pl[i].curvature) * 1e3; //unit: ms
+                float relTime = (pl[i].curvature - time_min) / (time_max - time_min);//点在点云中的相对时间
 //                ROS_INFO("min %f max %f t %f rel: %f", time_min, time_max, t, relTime);
-                pl[i].intensity = (int)pl[i].curvature + scanPeriod * relTime;
+                pl[i].intensity += scanPeriod * relTime;
 //                ROS_INFO("intensity: %f", pl[i].intensity);
             }
         }
