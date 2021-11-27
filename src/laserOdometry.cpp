@@ -115,7 +115,7 @@ std::vector<size_t> plane_feature_size;
 void TransformToStart(PointType const *const pi, PointType *const po)
 {
     //interpolation ratio
-    double s;
+    double s = 1.0;
     if (DISTORTION)
         s = (pi->intensity - int(pi->intensity)) / SCAN_PERIOD;
     else
@@ -491,7 +491,7 @@ int main(int argc, char **argv)
                                                                 laserCloudSurfLast->points[minPointInd3].y,
                                                                 laserCloudSurfLast->points[minPointInd3].z);
 
-                                double s;
+                                double s = 1.0;
                                 if (DISTORTION)
                                     s = (surfPointsFlat->points[i].intensity - int(surfPointsFlat->points[i].intensity)) / SCAN_PERIOD;
                                 else
